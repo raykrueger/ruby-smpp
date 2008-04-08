@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 # Sample SMPP SMS Gateway. A proper SMS gateway listens for MOs (incoming
 # messages) and DRs (delivery reports), and submit MTs (outgoing messages).
 #
@@ -97,9 +99,9 @@ begin
   # SMPP properties. These parameters work well with the Logica SMPP simulator.
   config = {
     :host => 'localhost',
-    :port => 2775,
-    :system_id => 'sm4422',
-    :password => 'denada23',
+    :port => 6000,
+    :system_id => 'foo',
+    :password => 'bar',
     :source_ton  => 0,
     :source_npi => 1,
     :destination_ton => 1,
