@@ -1,3 +1,9 @@
+= Ruby-SMPP
+
+* http://ruby-smpp.rubyforge.org
+
+== DESCRIPTION:
+
 Ruby-SMPP is a Ruby implementation of the SMPP v3.4 protocol. It is suitable for writing gateway daemons that communicate with SMSCs for sending and receiving SMS messages.
 
 The implementation is based on the Ruby/EventMachine library.
@@ -19,7 +25,62 @@ Testing
 Logica provides an SMPP simulator that you can download from http://opensmpp.logica.com/. You can 
 also sign up for a demo SMPP account at one of the many bulk-SMS providers out there.
 
-So it goes.
+== FEATURES/PROBLEMS:
 
-August Z. Flatby
-Apparat AS
+* Implements only typical client subset of SMPP 3.4 with single-connection Transceiver as opposed to dual-connection Transmitter + Receiver. 
+* Contributors are encouraged to add missing PDUs.
+* Need more test cases!
+
+== BASIC USAGE:
+
+Start the transceiver. Receive callbacks whenever incoming messages or delivery reports arrive. Send messages with Transceiver#send_mt. 
+
+<pre>
+  # connect to SMSC
+  tx = EventMachine::run do             
+    $tx = EventMachine::connect(
+    host, 
+    port, 
+    Smpp::Transceiver, 
+    config,             # a property hash 
+    mo_proc,            # the proc invoked on incoming (MO) messages
+    dr_proc,            # the proc invoked on delivery reports
+    pdr_storage)        # hash-like storage for pending delivery reports
+  end
+  
+  # send a message
+  tx.send_mt(id, from, to, body)
+</pre>
+
+For a more complete example, see examples/sample_gateway.rb
+
+== REQUIREMENTS:
+
+* Eventmachine 0.10.0
+
+== INSTALL:
+
+* sudo gem install ruby-smpp
+
+== LICENSE:
+
+Copyright (c) 2008 Apparat AS
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

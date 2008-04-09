@@ -1,3 +1,12 @@
+desc 'Release the website and new gem version'
+task :deploy => [:check_version, :release] do
+  puts "Remember to create SVN tag:"
+  puts "svn copy svn+ssh://#{rubyforge_username}@rubyforge.org/var/svn/#{PATH}/trunk " +
+    "svn+ssh://#{rubyforge_username}@rubyforge.org/var/svn/#{PATH}/tags/REL-#{VERS} "
+  puts "Suggested comment:"
+  puts "Tagging release #{CHANGES}"
+end
+
 desc 'Runs install_gem as a local deployment of the gem'
 task :local_deploy => [:install_gem]
 

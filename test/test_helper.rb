@@ -1,2 +1,2 @@
 require 'test/unit'
-require File.dirname(__FILE__) + '/../lib/ruby-smpp'
+require File.dirname(__FILE__) + '/../lib/smpp'

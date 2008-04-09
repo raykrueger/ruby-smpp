@@ -13,7 +13,8 @@
 # and accepts outgoing (MT) messages from the console. This may be useful for
 # testing your SMPP setup.
 
-require File.join(File.dirname(__FILE__), '..', 'lib', 'smpp.rb')
+gem 'ruby-smpp'
+require 'smpp'
 
 # set up logger
 Smpp::Base.logger = Logger.new(File.join(File.dirname(__FILE__), '..', 'log/sms_gateway.log'))
@@ -97,11 +98,13 @@ begin
   puts "Starting SMS Gateway"  
 
   # SMPP properties. These parameters work well with the Logica SMPP simulator.
+  # Consult the SMPP spec or your mobile operator for the correct settings of 
+  # the other properties.
   config = {
     :host => 'localhost',
     :port => 6000,
-    :system_id => 'foo',
-    :password => 'bar',
+    :system_id => 'jorge',
+    :password => 'jorge',
     :source_ton  => 0,
     :source_npi => 1,
     :destination_ton => 1,
