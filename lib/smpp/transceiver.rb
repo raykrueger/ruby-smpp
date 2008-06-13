@@ -88,7 +88,8 @@ class Smpp::Transceiver < Smpp::Base
     raise IOError, 'Receiver already bound.' unless @state == :unbound
     pdu = Pdu::BindTransceiver.new(
     @config[:system_id], 
-    @config[:password], 
+    @config[:password],
+    @config[:system_type], 
     @config[:source_ton], 
     @config[:source_npi], 
     @config[:source_address_range])

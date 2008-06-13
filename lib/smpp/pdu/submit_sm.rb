@@ -25,7 +25,7 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     replace_if_present_flag = 0
     data_coding             = options[:dcs]
     sm_default_msg_id       = 0
-    payload                 = udh ? udh + short_message : (short_message + "\0")
+    payload                 = udh ? udh + short_message : short_message # this used to be (short_message + "\0") which caused SMSCs to translate "\0" --> "@"
     sm_length               = payload.length
     
     # craft the string/byte buffer

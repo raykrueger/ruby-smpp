@@ -105,6 +105,8 @@ begin
     :port => 6000,
     :system_id => 'jorge',
     :password => 'jorge',
+	:system_type => 'vma', # default given according to SMPP 3.4 Spec
+    :interface_version => 52,
     :source_ton  => 0,
     :source_npi => 1,
     :destination_ton => 1,
