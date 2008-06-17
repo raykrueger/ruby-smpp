@@ -37,6 +37,23 @@ class Smpp::Transceiver < Smpp::Base
       raise InvalidStateException, "Transceiver is unbound. Cannot send MT messages."
     end
   end
+  # Send  MT SMS message for multiple dest_address
+  # Author: Abhishek Parolkar (abhishek[at]parolkar.com)
+  # USAGE: $tx.send_multi_mt(123, "9100000000", ["9199000000000","91990000000001","9199000000002"], "Message here")
+  def send_multi_mt(message_id, source_addr, destination_addr_arr, short_message, options={})
+    logger.debug "Sending Multiple MT: #{short_message}"
+    if @state == :bound
+      pdu = Pdu::SubmitMulti.new(source_addr, destination_addr_arr, short_message, options)
+      write_pdu pdu
+
+      # keep the message ID so we can associate the SMSC message ID with our message
+      # when the response arrives.      
+      @ack_ids[pdu.sequence_number] = message_id
+    else
+      raise InvalidStateException, "Transceiver is unbound. Cannot send MT messages."
+    end
+  end
+
 
   # a PDU is received
   def process_pdu(pdu)
@@ -78,6 +95,16 @@ class Smpp::Transceiver < Smpp::Base
       end
       # Now we got the SMSC message id; create pending delivery report
       @pdr_storage[pdu.message_id] = mt_message_id
+    when Pdu::SubmitMultiResponse
+      mt_message_id = @ack_ids[pdu.sequence_number]
+      if !mt_message_id
+        raise "Got SubmitMultiResponse for unknown sequence_number: #{pdu.sequence_number}"
+      end
+      if pdu.command_status != Pdu::Base::ESME_ROK
+        logger.error "Error status in SubmitMultiResponse: #{pdu.command_status}"
+      else
+        logger.info "Got OK SubmitMultiResponse (#{pdu.message_id} -> #{mt_message_id})"
+      end
     else
       super
     end 
