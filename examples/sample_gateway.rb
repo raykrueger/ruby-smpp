@@ -32,6 +32,29 @@ module KeyboardHandler
     from = '2210'
     to = '4790000000'       
     $tx.send_mt(123, from, to, data)
+
+
+# if you want to send messages with custom options, uncomment below code, this configuration allows the sender ID to be alpha numeric
+#    $tx.send_mt(123, "RubySmpp", to, "Testing RubySmpp as sender id",{
+#    :source_addr_ton=> 5,
+#	:service_type => 1,
+#	:source_addr_ton => 5,
+#	:source_addr_npi => 0 ,
+#	:dest_addr_ton => 2, 
+#	:dest_addr_npi => 1, 
+#	:esm_class => 3 ,
+#	:protocol_id => 0, 
+#	:priority_flag => 0,
+#	:schedule_delivery_time => nil,
+#	:validity_period => nil,
+#	:registered_delivery=> 1,
+#	:replace_if_present_flag => 0,
+#	:data_coding => 0,
+#	:sm_default_msg_id => 0 
+#     })   
+
+# if you want to send message to multiple destinations , uncomment below code
+#    $tx.send_multi_mt(123, from, ["919900000001","919900000002","919900000003"], "I am echoing that ruby-smpp is great")  
     prompt
   end
 end
