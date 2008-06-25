@@ -1,0 +1,26 @@
+
+Example PDU when sender address is an alphanumeric keyword
+
+type_name: submit_sm
+command_id: 4 = 0x00000004
+command_status: 0 = 0x00000000
+sequence_number: 5 = 0x00000005
+service_type: "1"
+source_addr_ton: 5 = 0x00000005
+source_addr_npi: 0 = 0x00000000
+source_addr: "RUBYSMPP"
+dest_addr_ton: 2 = 0x00000002
+dest_addr_npi: 1 = 0x00000001
+destination_addr: "919900000000" # number masked
+esm_class: 3 = 0x00000003
+protocol_id: 0 = 0x00000000
+priority_flag: 0 = 0x00000000
+schedule_delivery_time: NULL
+validity_period: NULL
+registered_delivery: 1 = 0x00000001
+replace_if_present_flag: 0 = 0x00000000
+data_coding: 0 = 0x00000000
+sm_default_msg_id: 0 = 0x00000000
+sm_length: 5 = 0x00000005
+short_message: "hello"
+
