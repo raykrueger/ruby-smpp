@@ -1,7 +1,5 @@
 = Ruby-SMPP
 
-* http://ruby-smpp.rubyforge.org
-
 == DESCRIPTION:
 
 Ruby-SMPP is a Ruby implementation of the SMPP v3.4 protocol. It is suitable for writing gateway daemons that communicate with SMSCs for sending and receiving SMS messages.
