@@ -18,10 +18,22 @@ Protocol
 -----------------
 The SMPP 3.4 protocol spec can be downloaded here: http://smsforum.net/SMPP_v3_4_Issue1_2.zip
 
-Testing
------------------
+Testing/Sample Code
+-------------------
 Logica provides an SMPP simulator that you can download from http://opensmpp.logica.com/. You can 
 also sign up for a demo SMPP account at one of the many bulk-SMS providers out there.
+
+For a quick test, download smscsim.jar and smpp.jar from the Logica site, and start the simulator by typing:
+
+java -cp smscsim.jar:smpp.jar com.logica.smscsim.Simulator
+
+Then type 1 (start simulation), and enter 6000 for port number. The simulator then starts a server socket on a background thread. In another terminal window, start the sample sms gateway from the ruby-smpp/examples directory by typing:
+
+./sample_gateway.rb
+
+You will be able to send MT messages from the sample gateway terminal window by typing the message body. In the simulator terminal window you should see SMPP PDUs being sent from the sample gateway. 
+
+You can also send MO messages from the simulator to the sample gateway by typing 7 (log to screen off) and then 4 (send message). MO messages received by the sample gateway will be logged to ./sms_gateway.log.
 
 == FEATURES/PROBLEMS:
 
@@ -54,7 +66,7 @@ For a more complete example, see examples/sample_gateway.rb
 
 == REQUIREMENTS:
 
-* Eventmachine 0.10.0
+* Eventmachine >= 0.10.0
 
 == INSTALL:
 

@@ -13,11 +13,12 @@
 # and accepts outgoing (MT) messages from the console. This may be useful for
 # testing your SMPP setup.
 
+require 'rubygems'
 gem 'ruby-smpp'
 require 'smpp'
 
 # set up logger
-Smpp::Base.logger = Logger.new(File.join(File.dirname(__FILE__), '..', 'log/sms_gateway.log'))
+Smpp::Base.logger = Logger.new('sms_gateway.log')
 
 # the transceiver
 $tx = nil
@@ -126,9 +127,9 @@ begin
   config = {
     :host => 'localhost',
     :port => 6000,
-    :system_id => 'jorge',
-    :password => 'jorge',
-	:system_type => 'vma', # default given according to SMPP 3.4 Spec
+    :system_id => 'hugo',
+    :password => 'ggoohu',
+	  :system_type => 'vma', # default given according to SMPP 3.4 Spec
     :interface_version => 52,
     :source_ton  => 0,
     :source_npi => 1,
