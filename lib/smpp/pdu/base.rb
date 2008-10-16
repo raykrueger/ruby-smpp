@@ -2,6 +2,7 @@
 module Smpp::Pdu
   class Base
     # Error constants
+    ESME_NULL             = 0x00000000 # used where error not needed
     ESME_ROK              = 0x00000000 # OK!
     ESME_RINVMSGLEN       = 0x00000001 # Message Length is invalid 
     ESME_RINVCMDLEN       = 0x00000002 # Command Length is invalid 
@@ -69,7 +70,7 @@ module Smpp::Pdu
     attr_reader :command_id, :command_status, :sequence_number, :body, :data
 
     def initialize(command_id, command_status, seq, body='')    
-      length = 16 + body.length
+      length = 16 + (body ||= '').length
       @command_id = command_id
       @command_status = command_status
       @body = body
@@ -111,6 +112,8 @@ module Smpp::Pdu
       len, cmd, status, seq = header.unpack('N4')
       body = data[16..-1]
       case cmd
+
+      # client and server pdus 
       when ENQUIRE_LINK:
         EnquireLink.new(seq)
       when ENQUIRE_LINK_RESP:
@@ -121,20 +124,74 @@ module Smpp::Pdu
         Unbind.new(seq)        
       when UNBIND_RESP:
         UnbindResponse.new(seq, status)        
-      when BIND_TRANSMITTER_RESP:
-        BindTransmitterResponse.new(seq, status, body) # could be opt'l params too
+
+      # client-only pdus
       when BIND_RECEIVER_RESP:
         BindReceiverResponse.new(seq, status, body) 
       when BIND_TRANSCEIVER_RESP:
         BindTransceiverResponse.new(seq, status, body)
+      when BIND_TRANSMITTER_RESP:
+        BindTransmitterResponse.new(seq, status, body) # could be opt'l params too
       when SUBMIT_SM_RESP:
         SubmitSmResponse.new(seq, status, body)
       when DELIVER_SM:
         DeliverSm.new(seq, status, body)
+
+      # server-only pdus
+      when BIND_RECEIVER:
+        BindReceiver.new(nil,nil,nil,nil,nil,body, seq)
+      when BIND_TRANSCEIVER:
+        BindTransceiver.new(nil,nil,nil,nil,nil,body, seq)
+      when BIND_TRANSMITTER:
+        BindTransmitter.new(nil,nil,nil,nil,nil,body, seq)
+      when DELIVER_SM_RESP:
+        DeliverSmResponse.new(seq, status)
+      when SUBMIT_SM:
+        SubmitSm.new(source = nil, destination = nil, message = nil, options = nil, seq, status, body)
+
       else
         Smpp::Base.logger.error "Unknown PDU: 0x#{cmd.to_s(16)}"
         return nil
       end
+    end
+
+    # builds a typical pdu "SM" body given the usual three variable config
+    # options
+    def Base.build_sm_body(source_addr, destination_addr, short_message, options={})
+      options.merge!(
+        :esm_class => 0,    # default smsc mode
+        :dcs => 3           # iso-8859-1
+      ) { |key, old_val, new_val| old_val } 
+    
+      @msg_body = short_message
+      
+      udh = options[:udh]          
+      service_type            = ''
+      source_addr_ton         = 0 # network specific
+      source_addr_npi         = 1 # unknown
+      dest_addr_ton           = 1 # international
+      dest_addr_npi           = 1 # unknown 
+      esm_class               = options[:esm_class]
+      protocol_id             = 0
+      priority_flag           = 1
+      schedule_delivery_time  = ''
+      validity_period         = ''
+      registered_delivery     = 1 # we want delivery notifications of success or failure
+      replace_if_present_flag = 0
+      data_coding             = options[:dcs]
+      sm_default_msg_id       = 0
+      payload                 = udh ? (udh + short_message) : (short_message)
+      sm_length               = payload.length
+      
+      # craft the string/byte buffer
+      pdu_body = sprintf("%s\0%c%c%s\0%c%c%s\0%c%c%c%s\0%s\0%c%c%c%c%c%s", 
+                   service_type, source_addr_ton, source_addr_npi, 
+                   source_addr, dest_addr_ton, dest_addr_npi, destination_addr, 
+                   esm_class, protocol_id, priority_flag, schedule_delivery_time, 
+                   validity_period, registered_delivery, replace_if_present_flag, 
+                   data_coding, sm_default_msg_id, sm_length, payload)
+
+      pdu_body
     end
   end
 end

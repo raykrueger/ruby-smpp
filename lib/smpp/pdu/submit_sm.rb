@@ -1,38 +1,36 @@
 # Sending an MT message
 class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
-  
+  attr_accessor :source_addr, :destination_addr, :short_message, :source_addr, :esm_class, :msg_reference, :stat
   # Note: short_message (the SMS body) must be in iso-8859-1 format
-  def initialize(source_addr, destination_addr, short_message, options={})
-    options.merge!(
-      :esm_class => 0,    # default smsc mode
-      :dcs => 3           # iso-8859-1
-    ) { |key, old_val, new_val| old_val } 
-  
+  def initialize(source_addr, destination_addr, short_message, options={}, seq = nil, status = nil, body = nil)
     @msg_body = short_message
-    
-    udh = options[:udh]          
-    service_type            = ''
-    source_addr_ton         = 0 # network specific
-    source_addr_npi         = 1 # unknown
-    dest_addr_ton           = 1 # international
-    dest_addr_npi           = 1 # unknown 
-    esm_class               = options[:esm_class]
-    protocol_id             = 0
-    priority_flag           = 1
-    schedule_delivery_time  = ''
-    validity_period         = ''
-    registered_delivery     = 1 # we want delivery notifications
-    replace_if_present_flag = 0
-    data_coding             = options[:dcs]
-    sm_default_msg_id       = 0
-    payload                 = udh ? udh + short_message : (short_message + "\0")
-    sm_length               = payload.length
-    
-    # craft the string/byte buffer
-    pdu_body = sprintf("%s\0%c%c%s\0%c%c%s\0%c%c%c%s\0%s\0%c%c%c%c%c%s", service_type, source_addr_ton, source_addr_npi, source_addr,
-    dest_addr_ton, dest_addr_npi, destination_addr, esm_class, protocol_id, priority_flag, schedule_delivery_time, validity_period,
-    registered_delivery, replace_if_present_flag, data_coding, sm_default_msg_id, sm_length, payload)
-    super(SUBMIT_SM, 0, next_sequence_number, pdu_body)        
+    if body.blank?
+      # generate a body given the individual params
+      body = Smpp::Pdu::Base.build_sm_body(source_addr, destination_addr, short_message, options)
+      seq = next_sequence_number
+    else
+      # otherwise unpack the given body into the params
+      # brutally unpack it
+      service_type, 
+      source_addr_ton, 
+      source_addr_npi, 
+      @source_addr, 
+      dest_addr_ton, 
+      dest_addr_npi, 
+      @destination_addr, 
+      @esm_class, 
+      protocol_id,
+      priority_flag, 
+      schedule_delivery_time, 
+      validity_period, 
+      registered_delivery, 
+      replace_if_present_flag, 
+      data_coding, 
+      sm_default_msg_id,
+      sm_length, 
+      @msg_body = body.unpack('Z*CCZ*CCZ*CCCZ*Z*CCCCCa*')
+    end
+    super(SUBMIT_SM, 0, seq, body)        
   end
   
   # some special formatting is needed for SubmitSm PDUs to show the actual message content

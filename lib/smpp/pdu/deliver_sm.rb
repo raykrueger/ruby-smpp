@@ -37,4 +37,5 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     end
     super(DELIVER_SM, status, seq, body)
   end
+
 end

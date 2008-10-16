@@ -10,6 +10,8 @@ require 'logger'
 $:.unshift(File.dirname(__FILE__))
 require 'smpp/base.rb'
 require 'smpp/transceiver.rb'
+require 'smpp/receiver.rb'
+require 'smpp/transmitter.rb'
 require 'smpp/pdu/base.rb'
 
 # Load all PDUs

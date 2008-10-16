@@ -1,4 +1,4 @@
-class Smpp::Transceiver < Smpp::Base
+class Smpp::Transmitter < Smpp::Base
 
   # Expects a config hash, 
   # a proc to invoke for incoming (MO) messages,
@@ -34,7 +34,7 @@ class Smpp::Transceiver < Smpp::Base
       # when the response arrives.      
       @ack_ids[pdu.sequence_number] = message_id
     else
-      raise InvalidStateException, "Transceiver is unbound. Cannot send MT messages."
+      raise InvalidStateException, "Transmitter is unbound. Cannot send MT messages."
     end
   end
 
@@ -51,7 +51,7 @@ class Smpp::Transceiver < Smpp::Base
         # Invoke DR proc (let the owner of the block do the mapping from msg_reference to mt_id)
         @dr_proc.call(pdu.msg_reference.to_s, pdu.stat)
       end     
-    when Pdu::BindTransceiverResponse
+    when Pdu::BindTransmitterResponse
       case pdu.command_status
       when Pdu::Base::ESME_ROK
         logger.debug "Bound OK."
@@ -63,7 +63,7 @@ class Smpp::Transceiver < Smpp::Base
         logger.warn "Invalid system id."
         EventMachine::stop_event_loop
       else
-        logger.warn "Unexpected BindTransceiverResponse. Command status: #{pdu.command_status}"
+        logger.warn "Unexpected BindTransmitterResponse. Command status: #{pdu.command_status}"
         EventMachine::stop_event_loop
       end
     when Pdu::SubmitSmResponse
@@ -83,10 +83,10 @@ class Smpp::Transceiver < Smpp::Base
     end 
   end
 
-  # Send BindTransceiverResponse PDU.
+  # Send BindTransmitterResponse PDU.
   def send_bind
-    raise IOError, 'Receiver already bound.' unless unbound?
-    pdu = Pdu::BindTransceiver.new(
+    raise IOError, 'Transmitter already bound.' unless unbound?
+    pdu = Pdu::BindTransmitter.new(
     @config[:system_id], 
     @config[:password], 
     @config[:source_ton], 
