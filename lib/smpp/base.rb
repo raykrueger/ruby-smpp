@@ -27,6 +27,7 @@ module Smpp
     
     def initialize(config)
       @config = config
+      @data = ""
     end
     
     # invoked by EventMachine when connected
@@ -54,11 +55,25 @@ module Smpp
 
     # EventMachine::Connection#receive_data
     def receive_data(data)
-      # parse incoming PDU
-      pdu = read_pdu(data)
-      
-      # let subclass process it
-      process_pdu(pdu) if pdu
+      #append data to buffer
+      @data << data
+
+      while (@data.length >=4)
+        cmd_length = @data[0..3].unpack('N').first
+        if(@data.length < cmd_length)
+          #not complete packet ... break
+          break
+        end
+        
+        pkt = @data.slice!(0,cmd_length)
+
+        # parse incoming PDU
+        pdu = read_pdu(pkt)
+
+        # let subclass process it
+        process_pdu(pdu) if pdu
+
+      end
     end
     
     # EventMachine::Connection#unbind
