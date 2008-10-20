@@ -37,7 +37,7 @@ You can also send MO messages from the simulator to the sample gateway by typing
 
 == FEATURES/PROBLEMS:
 
-* Implements only typical client subset of SMPP 3.4 with single-connection Transceiver as opposed to dual-connection Transmitter + Receiver. 
+* Implements only typical client subset of SMPP 3.4 with single-connection Transceiver as opposed to dual-connection Transmitter + Receiver (UPDATE: see NEWS re. patch from Taryn East)
 * Contributors are encouraged to add missing PDUs.
 * Need more test cases!
 
