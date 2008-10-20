@@ -17,6 +17,8 @@ lib/smpp/pdu/deliver_sm_response.rb
 lib/smpp/pdu/enquire_link.rb
 lib/smpp/pdu/enquire_link_response.rb
 lib/smpp/pdu/generic_nack.rb
+lib/smpp/pdu/submit_multi.rb
+lib/smpp/pdu/submit_multi_response.rb
 lib/smpp/pdu/submit_sm.rb
 lib/smpp/pdu/submit_sm_response.rb
 lib/smpp/pdu/unbind.rb
