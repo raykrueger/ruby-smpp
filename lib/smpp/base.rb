@@ -116,6 +116,7 @@ module Smpp
     private  
     def write_pdu(pdu)
       logger.debug "<- #{pdu.to_human}"
+      hex_debug pdu.data, "<- "
       send_data pdu.data
     end
 
@@ -129,11 +130,39 @@ module Smpp
         else
           logger.debug "-> " + pdu.to_human          
         end
+        hex_debug data, "-> "
       rescue Exception => ex
         logger.error "Exception while reading PDUs: #{ex} in #{ex.backtrace[0]}"
         raise
       end
       pdu
+    end
+
+    def hex_debug(data, prefix = "")
+      return unless @config[:hex_debug]
+      hexdump(data).each_line do |line| 
+        logger.debug(prefix + line.chomp)
+      end
+    end
+
+    def hexdump(target)
+      width=16
+      group=2
+
+      output = ""
+      n=0
+      ascii=''
+      target.each_byte { |b|
+        if n%width == 0
+          output << "%s\n%08x: "%[ascii,n]
+          ascii='| '
+        end
+        output << "%02x"%b
+        output << ' ' if (n+=1)%group==0
+        ascii << "%s"%b.chr.tr('^ -~','.')
+      }
+      output << ' '*(((2+width-ascii.size)*(2*group+1))/group.to_f).ceil+ascii
+      output[1..-1]
     end    
   end
 end

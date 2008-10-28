@@ -73,6 +73,9 @@ class Smpp::Transceiver < Smpp::Base
       when Pdu::Base::ESME_ROK
         logger.debug "Bound OK."
         @state = :bound
+      when Pdu::Base::ESME_RBINDFAIL
+        logger.error "Bind Failed"
+        EventMachine::stop_event_loop
       when Pdu::Base::ESME_RINVPASWD
         logger.warn "Invalid password."
         EventMachine::stop_event_loop
@@ -80,7 +83,7 @@ class Smpp::Transceiver < Smpp::Base
         logger.warn "Invalid system id."
         EventMachine::stop_event_loop
       else
-        logger.warn "Unexpected BindTransceiverResponse. Command status: #{pdu.command_status}"
+        logger.warn "Unexpected BindTransceiverResponse command_status: #{"0x%08x" % pdu.command_status}"
         EventMachine::stop_event_loop
       end
     when Pdu::SubmitSmResponse
@@ -89,7 +92,7 @@ class Smpp::Transceiver < Smpp::Base
         raise "Got SubmitSmResponse for unknown sequence_number: #{pdu.sequence_number}"
       end
       if pdu.command_status != Pdu::Base::ESME_ROK
-        logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
+        logger.error "Error in SubmitSmResponse, command_status: #{"0x%08x" % pdu.command_status}"
       else
         logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
       end
@@ -101,7 +104,7 @@ class Smpp::Transceiver < Smpp::Base
         raise "Got SubmitMultiResponse for unknown sequence_number: #{pdu.sequence_number}"
       end
       if pdu.command_status != Pdu::Base::ESME_ROK
-        logger.error "Error status in SubmitMultiResponse: #{pdu.command_status}"
+        logger.error "Error in SubmitMultiResponse, command_status: #{"0x%08x" % pdu.command_status}"
       else
         logger.info "Got OK SubmitMultiResponse (#{pdu.message_id} -> #{mt_message_id})"
       end

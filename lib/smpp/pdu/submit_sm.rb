@@ -7,20 +7,20 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     @msg_body = short_message
     
     udh = options[:udh]          
-    service_type            = options[:service_type]? options[:service_type] :''
-    source_addr_ton         = options[:source_addr_ton]?options[:source_addr_ton]:0 # network specific
-    source_addr_npi         = options[:source_addr_npi]?options[:source_addr_npi]:1 # unknown
-    dest_addr_ton           = options[:dest_addr_ton]?options[:dest_addr_ton]:1 # international
-    dest_addr_npi           = options[:dest_addr_npi]?options[:dest_addr_npi]:1 # unknown 
-    esm_class               = options[:esm_class]?options[:esm_class]:0 # default smsc mode
-    protocol_id             = options[:protocol_id]?options[:protocol_id]:0
-    priority_flag           = options[:priority_flag]?options[:priority_flag]:1
-    schedule_delivery_time  = options[:schedule_delivery_time]?options[:schedule_delivery_time]:''
-    validity_period         = options[:validity_period]?options[:validity_period]:''
-    registered_delivery     = options[:registered_delivery]?options[:registered_delivery]:1 # we want delivery notifications
-    replace_if_present_flag = options[:replace_if_present_flag]?options[:replace_if_present_flag]:0
-    data_coding             = options[:data_coding]?options[:data_coding]:3 # iso-8859-1
-    sm_default_msg_id       = options[:sm_default_msg_id]?options[:sm_default_msg_id]:0
+    service_type            = options[:service_type] ? options[:service_type] : ''
+    source_addr_ton         = options[:source_addr_ton] ? options[:source_addr_ton] : 0 # network specific
+    source_addr_npi         = options[:source_addr_npi] ? options[:source_addr_npi] : 1 # unknown
+    dest_addr_ton           = options[:dest_addr_ton] ? options[:dest_addr_ton] : 1 # international
+    dest_addr_npi           = options[:dest_addr_npi] ? options[:dest_addr_npi] : 1 # unknown 
+    esm_class               = options[:esm_class] ? options[:esm_class] : 0 # default smsc mode
+    protocol_id             = options[:protocol_id] ? options[:protocol_id] : 0
+    priority_flag           = options[:priority_flag] ? options[:priority_flag] : 1
+    schedule_delivery_time  = options[:schedule_delivery_time] ? options[:schedule_delivery_time] : ''
+    validity_period         = options[:validity_period] ? options[:validity_period] : ''
+    registered_delivery     = options[:registered_delivery] ? options[:registered_delivery] : 1 # we want delivery notifications
+    replace_if_present_flag = options[:replace_if_present_flag] ? options[:replace_if_present_flag] : 0
+    data_coding             = options[:data_coding] ? options[:data_coding] : 3 # iso-8859-1
+    sm_default_msg_id       = options[:sm_default_msg_id] ? options[:sm_default_msg_id] : 0
     payload                 = udh ? udh + short_message : short_message # this used to be (short_message + "\0")
     sm_length               = payload.length
     
