@@ -12,6 +12,13 @@ module Smpp
     
     # :bound or :unbound
     attr_accessor :state
+    # queries the state of the transmitter - is it bound?
+    def unbound?
+      @state == :unbound
+    end
+    def bound?
+      @state == :bound
+    end
     
     def Base.logger
       @@logger
@@ -32,8 +39,9 @@ module Smpp
     
     # invoked by EventMachine when connected
     def post_init
-      # send Bind PDU
-      send_bind
+      # send Bind PDU if we are a binder (eg
+      # Receiver/Transmitter/Transceiver
+      send_bind unless defined?(am_server?) && am_server?
 
       # start timer that will periodically send enquire link PDUs
       start_enquire_link_timer(@config[:enquire_link_delay_secs]) if @config[:enquire_link_delay_secs]
@@ -41,14 +49,27 @@ module Smpp
       logger.error "Error starting RX: #{ex.message} at #{ex.backtrace[0]}"
     end
 
+    # sets up a periodic timer that will periodically enquire as to the
+    # state of the connection
+    # Note: to add in custom executable code (that only runs on an open
+    # connection), derive from the appropriate Smpp class and overload the
+    # method named: periodic_call_method
     def start_enquire_link_timer(delay_secs)
       logger.info "Starting enquire link timer (with #{delay_secs}s interval)"
       EventMachine::PeriodicTimer.new(delay_secs) do 
         if error?
           logger.warn "Link timer: Connection is in error state. Terminating loop."
           EventMachine::stop_event_loop
+        elsif unbound?
+          logger.warn "Link is unbound, waiting until next #{delay_secs} interval before querying again"
         else
-          write_pdu Pdu::EnquireLink.new
+
+          # if the user has defined a method to be called periodically, do
+          # it now - and continue if it indicates to do so
+          rval = defined?(periodic_call_method) ? periodic_call_method : true
+
+          # only send an OK if this worked
+          write_pdu Pdu::EnquireLink.new if rval 
         end
       end
     end

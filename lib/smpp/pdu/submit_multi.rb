@@ -1,5 +1,6 @@
 # Sending an MT message to multiple addresses
 # Author: Abhishek Parolkar, (abhishek[at]parolkar.com)
+#TODO: Implement from_wire_data for this pdu class.
 class Smpp::Pdu::SubmitMulti < Smpp::Pdu::Base
   IS_SMEADDR = 1 # type of dest_flag
   IS_DISTLISTNAME = 2 #type of dest_flag  
@@ -45,23 +46,23 @@ class Smpp::Pdu::SubmitMulti < Smpp::Pdu::Base
     a = @data.to_s.unpack('N4')       
     sprintf("(%22s) len=%3d cmd=%8s status=%1d seq=%03d (%s)", self.class.to_s[11..-1], a[0], a[1].to_s(16), a[2], a[3], @msg_body[0..30])
   end
+
   def build_destination_addresses(dest_array,dest_addr_ton,dest_addr_npi, dest_flag = IS_SMEADDR)
-  
-	formatted_array = Array.new
-	dest_array.each { |dest_elem|
-		if dest_flag == IS_SMEADDR
-			packet_str = sprintf("%c%c%c%s",IS_SMEADDR,dest_addr_ton,dest_addr_npi,dest_elem)
-			formatted_array.push(packet_str)
+    formatted_array = Array.new
+    dest_array.each { |dest_elem|
+      if dest_flag == IS_SMEADDR
+        packet_str = sprintf("%c%c%c%s",IS_SMEADDR,dest_addr_ton,dest_addr_npi,dest_elem)
+        formatted_array.push(packet_str)
 
-		elsif dest_flag == IS_DISTLISTNAME
-			packet_str = sprintf("%c%s",IS_SMEADDR,dest_elem)
-                        formatted_array.push(packet_str)
+      elsif dest_flag == IS_DISTLISTNAME
+        packet_str = sprintf("%c%s",IS_SMEADDR,dest_elem)
+                          formatted_array.push(packet_str)
 
-		end
+      end
 
-	}
+    }
 
-	formatted_array.join('\0');
+    formatted_array.join('\0');
   end
   
 end

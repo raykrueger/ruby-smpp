@@ -1,6 +1,8 @@
 # PDUs are the protcol base units in SMPP
 module Smpp::Pdu
   class Base
+    #Protocol Version
+    PROTOCOL_VERSION      = 0x34
     # Error constants
     ESME_ROK              = 0x00000000 # OK!
     ESME_RINVMSGLEN       = 0x00000001 # Message Length is invalid 
@@ -67,6 +69,9 @@ module Smpp::Pdu
     # Add monitor to sequence counter for thread safety
     @@seq.extend(MonitorMixin)
 
+    #factory class registry
+    @@cmd_map = {}
+
     attr_reader :command_id, :command_status, :sequence_number, :body, :data
 
     def initialize(command_id, command_status, seq, body='')    
@@ -103,6 +108,12 @@ module Smpp::Pdu
       end
     end
 
+    #This factory should be implemented in every subclass that can create itself from wire
+    #data.  The subclass should also use the 'handles_cmd' macro to 
+    def Base.from_wire_data(seq, status, body)
+      raise Exception.new("#{self.class} claimed to handle wire data, but doesn't.")
+    end
+
     # PDU factory method for common client PDUs (used to create PDUs from wire data)
     def Base.create(data)
       header = data[0..15]
@@ -111,33 +122,21 @@ module Smpp::Pdu
       end
       len, cmd, status, seq = header.unpack('N4')
       body = data[16..-1]
-      case cmd
-      when ENQUIRE_LINK:
-        EnquireLink.new(seq)
-      when ENQUIRE_LINK_RESP:
-        EnquireLinkResponse.new(seq)
-      when GENERIC_NACK:
-        GenericNack.new(seq, status, body)        
-      when UNBIND:
-        Unbind.new(seq)        
-      when UNBIND_RESP:
-        UnbindResponse.new(seq, status)        
-      when BIND_TRANSMITTER_RESP:
-        BindTransmitterResponse.new(seq, status, body) # could be opt'l params too
-      when BIND_RECEIVER_RESP:
-        BindReceiverResponse.new(seq, status, body) 
-      when BIND_TRANSCEIVER_RESP:
-        BindTransceiverResponse.new(seq, status, body)
-      when SUBMIT_SM_RESP:
-        SubmitSmResponse.new(seq, status, body)
-      when SUBMIT_MULTI_RESP:
-        SubmitMultiResponse.new(seq, status, body)
-      when DELIVER_SM:
-        DeliverSm.new(seq, status, body)
+          
+      #if a class has been registered to handle this command_id, try
+      #to create an instance from the wire data
+      if @@cmd_map[cmd]
+        @@cmd_map[cmd].from_wire_data(seq, status, body)
       else
         Smpp::Base.logger.error "Unknown PDU: 0x#{cmd.to_s(16)}"
         return nil
       end
     end
+
+    #maps a subclass as the handler for a particulular pdu
+    def Base.handles_cmd(command_id)
+      @@cmd_map[command_id] = self
+    end
+
   end
 end
