@@ -109,7 +109,7 @@ module Smpp::Pdu
     end
 
     #This factory should be implemented in every subclass that can create itself from wire
-    #data.  The subclass should also use the 'handles_cmd' macro to 
+    #data.  The subclass should also register itself with the 'handles_cmd' class method.
     def Base.from_wire_data(seq, status, body)
       raise Exception.new("#{self.class} claimed to handle wire data, but doesn't.")
     end
