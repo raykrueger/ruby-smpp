@@ -3,12 +3,14 @@ class Smpp::Transceiver < Smpp::Base
   # Expects a config hash, 
   # a proc to invoke for incoming (MO) messages,
   # a proc to invoke for delivery reports,
+  # a proc to invoke for sent messages,
   # and optionally a hash-like storage for pending delivery reports.
-  def initialize(config, mo_proc, dr_proc, pdr_storage={})
+  def initialize(config, mo_proc, dr_proc, ms_proc, pdr_storage={})
     super(config)
     @state = :unbound
     @mo_proc = mo_proc
-    @dr_proc = dr_proc      
+    @dr_proc = dr_proc
+    @ms_proc = ms_proc
     @pdr_storage = pdr_storage   
     
     # Array of un-acked MT message IDs indexed by sequence number.
@@ -95,6 +97,8 @@ class Smpp::Transceiver < Smpp::Base
       end
       # Now we got the SMSC message id; create pending delivery report
       @pdr_storage[pdu.message_id] = mt_message_id
+      @ms_proc.call(mt_message_id, pdu.message_id) unless @ms_proc.nil?
+      
     when Pdu::SubmitMultiResponse
       mt_message_id = @ack_ids[pdu.sequence_number]
       if !mt_message_id
