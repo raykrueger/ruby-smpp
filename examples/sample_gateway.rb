@@ -85,12 +85,15 @@ def start(config)
   end
 
   # Invoked on delivery reports
-  dr_proc = Proc.new do |msg_reference, operator_status_code|
+  dr_proc = Proc.new do |msg_reference, dr_pdu|
     begin
       # The SMSC returns its own message reference. Look up (and delete) our stored objects
       # based on this reference.
+      # 
+      # The short_message attribute contains details on the current delivery status of the
+      # message.
       pending_message = pdr_storage.delete(msg_reference)
-      logger.info "Received DR for #{pending_message}: #{operator_status_code}"
+      logger.info "Received DR for #{pending_message}: #{dr_pdu.short_message}"
     rescue Exception => ex
       logger.error "Error processing DR: #{ex}"
     end
