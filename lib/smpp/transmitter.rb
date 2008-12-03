@@ -49,7 +49,7 @@ class Smpp::Transmitter < Smpp::Base
         @mo_proc.call(pdu.source_addr, pdu.destination_addr, pdu.short_message)
       else
         # Invoke DR proc (let the owner of the block do the mapping from msg_reference to mt_id)
-        @dr_proc.call(pdu.msg_reference.to_s, pdu.stat)
+        @dr_proc.call(pdu.msg_reference.to_s, pdu)
       end     
     when Pdu::BindTransmitterResponse
       case pdu.command_status
