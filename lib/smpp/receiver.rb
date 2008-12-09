@@ -43,13 +43,13 @@ class Smpp::Receiver < Smpp::Base
         @state = :bound
       when Pdu::Base::ESME_RINVPASWD
         logger.warn "Invalid password."
-        EventMachine::stop_event_loop
+        close_connection
       when Pdu::Base::ESME_RINVSYSID
         logger.warn "Invalid system id."
-        EventMachine::stop_event_loop
+        close_connection
       else
         logger.warn "Unexpected BindReceiverResponse. Command status: #{pdu.command_status}"
-        EventMachine::stop_event_loop
+        close_connection
       end
     when Pdu::SubmitSmResponse
       mt_message_id = @ack_ids[pdu.sequence_number]

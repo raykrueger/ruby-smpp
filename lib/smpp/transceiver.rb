@@ -1,5 +1,4 @@
 class Smpp::Transceiver < Smpp::Base
-
   # Expects a config hash, 
   # a proc to invoke for incoming (MO) messages,
   # a proc to invoke for delivery reports,
@@ -39,6 +38,41 @@ class Smpp::Transceiver < Smpp::Base
       raise InvalidStateException, "Transceiver is unbound. Cannot send MT messages."
     end
   end
+
+  # Send a concatenated message with a body of > 160 characters as multiple messages.
+  def send_concat_mt(message_id, source_addr, destination_addr, message, options = {})
+    logger.debug "Sending concatenated MT: #{message}"
+    if @state == :bound
+      # Split the message into parts of 153 characters. (160 - 7 characters for UDH)
+      parts = []
+      while message.size > 0 do
+        parts << message.slice!(0..152)
+      end
+      
+      0.upto(parts.size-1) do |i|
+        udh = sprintf("%c", 5)            # UDH is 5 bytes.
+        udh << sprintf("%c%c", 0, 3)      # This is a concatenated message 
+        udh << sprintf("%c", message_id)  # The ID for the entire concatenated message
+        udh << sprintf("%c", parts.size)  # How many parts this message consists of
+        udh << sprintf("%c", i+1)         # This is part i+1
+        
+        options = {
+          :esm_class => 64,               # This message contains a UDH header.
+          :udh => udh 
+        }
+        
+        pdu = Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], options)
+        write_pdu pdu
+        
+        # This is definately a bit hacky - multiple PDUs are being associated with a single
+        # message_id.
+        @ack_ids[pdu.sequence_number] = message_id
+      end
+    else
+      raise InvalidStateException, "Transceiver is unbound. Connot send MT messages."
+    end
+  end
+
   # Send  MT SMS message for multiple dest_address
   # Author: Abhishek Parolkar (abhishek[at]parolkar.com)
   # USAGE: $tx.send_multi_mt(123, "9100000000", ["9199000000000","91990000000001","9199000000002"], "Message here")
@@ -77,13 +111,13 @@ class Smpp::Transceiver < Smpp::Base
         @state = :bound
       when Pdu::Base::ESME_RINVPASWD
         logger.warn "Invalid password."
-        EventMachine::stop_event_loop
+        close_connection
       when Pdu::Base::ESME_RINVSYSID
         logger.warn "Invalid system id."
-        EventMachine::stop_event_loop
+        close_connection
       else
         logger.warn "Unexpected BindTransceiverResponse. Command status: #{pdu.command_status}"
-        EventMachine::stop_event_loop
+        close_connection
       end
     when Pdu::SubmitSmResponse
       mt_message_id = @ack_ids[pdu.sequence_number]

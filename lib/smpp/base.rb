@@ -58,8 +58,8 @@ module Smpp
       logger.info "Starting enquire link timer (with #{delay_secs}s interval)"
       EventMachine::PeriodicTimer.new(delay_secs) do 
         if error?
-          logger.warn "Link timer: Connection is in error state. Terminating loop."
-          EventMachine::stop_event_loop
+          logger.warn "Link timer: Connection is in error state. Disconnecting."
+          close_connection
         elsif unbound?
           logger.warn "Link is unbound, waiting until next #{delay_secs} interval before querying again"
         else
@@ -120,20 +120,20 @@ module Smpp
       when Pdu::Unbind
         @state = :unbound
         write_pdu(Pdu::UnbindResponse.new(pdu.sequence_number, Pdu::Base::ESME_ROK))
-        EventMachine::stop_event_loop
+        close_connection
       when Pdu::UnbindResponse      
         logger.info "Unbound OK. Closing connection."
         close_connection
       when Pdu::GenericNack
         logger.warn "Received NACK! (error code #{pdu.error_code})."
         # we don't take this lightly: stop the event loop
-        EventMachine::stop_event_loop
+        close_connection
       else
         logger.warn "(#{self.class.name}) Received unexpected PDU: #{pdu.to_human}."
-        EventMachine::stop_event_loop                
+        close_connection
       end
     end
-    
+
     private  
     def write_pdu(pdu)
       logger.debug "<- #{pdu.to_human}"
