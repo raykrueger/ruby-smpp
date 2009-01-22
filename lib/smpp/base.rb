@@ -12,10 +12,12 @@ module Smpp
     
     # :bound or :unbound
     attr_accessor :state
+    
     # queries the state of the transmitter - is it bound?
     def unbound?
       @state == :unbound
     end
+    
     def bound?
       @state == :bound
     end
@@ -33,6 +35,7 @@ module Smpp
     end
     
     def initialize(config)
+      @state = :unbound
       @config = config
       @data = ""
     end
@@ -98,14 +101,16 @@ module Smpp
     end
     
     # EventMachine::Connection#unbind
+    # Invoked by EM when connection is closed. Delegates should consider
+    # breaking the event loop and reconnect when they receive this callback.
     def unbind
-      logger.warn "EventMachine: unbind invoked in bound state" if @state == :bound
+      if @delegate.respond_to?(:unbound)
+        @delegate.unbound(self)
+      end
     end
     
     def send_unbind
-      #raise rescue logger.debug "Unbinding, now?? #{$!.backtrace[1..5].join("\n")}"
       write_pdu Pdu::Unbind.new
-      # leave it to the subclass to process the UnbindResponse
       @state = :unbound
     end
 
@@ -126,7 +131,7 @@ module Smpp
         close_connection
       when Pdu::GenericNack
         logger.warn "Received NACK! (error code #{pdu.error_code})."
-        # we don't take this lightly: stop the event loop
+        # we don't take this lightly: close the connection
         close_connection
       else
         logger.warn "(#{self.class.name}) Received unexpected PDU: #{pdu.to_human}."

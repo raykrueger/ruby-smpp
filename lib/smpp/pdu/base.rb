@@ -61,7 +61,7 @@ module Smpp::Pdu
     CANCEL_SM_RESP        = 0X80000008 
     ENQUIRE_LINK          = 0X00000015 
     ENQUIRE_LINK_RESP     = 0X80000015
-    SUBMIT_MULTI	  = 0X00000021
+    SUBMIT_MULTI	        = 0X00000021
     SUBMIT_MULTI_RESP     = 0X80000021
     # PDU sequence number. 
     @@seq = [Time.now.to_i]

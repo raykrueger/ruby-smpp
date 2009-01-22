@@ -6,3 +6,4 @@ Contributors:
   Taryn East <taryn@taryneast.org>
   Josh Bryan <jbryan@cashnetusa.com>
   Jon Wood <jonathan.wood@uk.clara.net>
+  Jacob Eiler <jacob.eiler@apide.com>

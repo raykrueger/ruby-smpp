@@ -37,13 +37,13 @@ You can also send MO messages from the simulator to the sample gateway by typing
 
 == FEATURES/PROBLEMS:
 
-* Implements only typical client subset of SMPP 3.4 with single-connection Transceiver as opposed to dual-connection Transmitter + Receiver (UPDATE: see NEWS re. patch from Taryn East)
+* Implements only typical client subset of SMPP 3.4 with single-connection Transceiver.
 * Contributors are encouraged to add missing PDUs.
 * Need more test cases!
 
 == BASIC USAGE:
 
-Start the transceiver. Receive callbacks whenever incoming messages or delivery reports arrive. Send messages with Transceiver#send_mt. 
+Start the transceiver. Receive delegate callbacks whenever incoming messages or delivery reports arrive. Send messages with Transceiver#send_mt. 
 
 <pre>
   # connect to SMSC

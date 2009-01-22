@@ -5,8 +5,9 @@ require 'test/unit'
 require 'stringio'
 require 'smpp'
 
-module Server1
-  def receive_data(data)        
+# a server which immediately requests the client to unbind
+module Server1  
+  def receive_data(data)
     send_data Smpp::Pdu::Unbind.new.data    
   end
 end
@@ -16,6 +17,30 @@ module Server2
     # problem: our Pdu's should have factory methods for "both ways"; ie. when created 
     # by client, and when created from wire data.
     send_data Smpp::Pdu::SubmitSmResponse.new(1, 2, "100").data
+  end
+end
+
+# the delagate receives callbacks when interesting things happen on the connection
+class Delegate
+  def mo_received(transceiver, source_addr, destination_addr, short_message)
+    puts "** mo_received"
+  end
+  
+  def delivery_report_received(transceiver, msg_reference, stat, pdu)
+    puts "** delivery_report_received"
+  end
+  
+  def message_accepted(transceiver, mt_message_id, smsc_message_id)
+    puts "** message_sent"
+  end
+  
+  def bound(transceiver)
+    puts "** bound"
+  end
+  
+  def unbound(transceiver)  
+    puts "** unbound"
+    EventMachine::stop_event_loop
   end
 end
 
@@ -37,36 +62,12 @@ class SmppTest < Test::Unit::TestCase
     }
   end
   
-  def test_transceiver_should_bind_and_unbind_and_stop
+  def test_transceiver_should_bind_and_unbind_then_stop
     EventMachine.run {
       EventMachine.start_server "localhost", 9000, Server1
-      EventMachine.connect "localhost", 9000, Smpp::Transceiver, config, nil, nil
+      EventMachine.connect "localhost", 9000, Smpp::Transceiver, config, Delegate.new
     }
     # should not hang here: the server's response should have caused the client to terminate
-  end
-
-
-  def test_bind_receiver
-    pdu1 = Smpp::Pdu::BindReceiver.new(
-      config[:system_id],
-      config[:password],
-      config[:system_type],
-      config[:source_ton],
-      config[:source_npi],
-      config[:source_address_range]
-    )
-
-    pdu2 = Smpp::Pdu::Base.create(pdu1.data)
-
-    assert_instance_of(Smpp::Pdu::BindReceiver, pdu2)
-    assert_equal(pdu1.system_id, pdu2.system_id)
-    assert_equal(pdu1.password, pdu2.password)
-    assert_equal(pdu1.system_type, pdu2.system_type)
-    assert_equal(pdu1.addr_ton, pdu2.addr_ton)
-    assert_equal(pdu1.addr_npi, pdu2.addr_npi)
-    assert_equal(pdu1.address_range, pdu2.address_range)
-    assert_equal(pdu1.sequence_number, pdu2.sequence_number)
-    assert_equal(pdu1.command_status, pdu2.command_status)
   end
 
   def test_bind_transceiver
@@ -92,51 +93,10 @@ class SmppTest < Test::Unit::TestCase
     assert_equal(pdu1.command_status, pdu2.command_status)
   end
 
-  def test_bind_transmitter
-    pdu1 = Smpp::Pdu::BindTransmitter.new(
-      config[:system_id],
-      config[:password],
-      config[:system_type],
-      config[:source_ton],
-      config[:source_npi],
-      config[:source_address_range]
-    )
-
-    pdu2 = Smpp::Pdu::Base.create(pdu1.data)
-
-    assert_instance_of(Smpp::Pdu::BindTransmitter, pdu2)
-    assert_equal(pdu1.system_id, pdu2.system_id)
-    assert_equal(pdu1.password, pdu2.password)
-    assert_equal(pdu1.system_type, pdu2.system_type)
-    assert_equal(pdu1.addr_ton, pdu2.addr_ton)
-    assert_equal(pdu1.addr_npi, pdu2.addr_npi)
-    assert_equal(pdu1.address_range, pdu2.address_range)
-    assert_equal(pdu1.sequence_number, pdu2.sequence_number)
-    assert_equal(pdu1.command_status, pdu2.command_status)
-  end
-
-  def test_bind_receiver_response
-    pdu1 = Smpp::Pdu::BindReceiverResponse.new(nil, Smpp::Pdu::Base::ESME_ROK, config[:system_id])
-    pdu2 = Smpp::Pdu::Base.create(pdu1.data)
-    assert_instance_of(Smpp::Pdu::BindReceiverResponse, pdu2)
-    assert_equal(pdu1.system_id, pdu2.system_id)
-    assert_equal(pdu1.sequence_number, pdu2.sequence_number)
-    assert_equal(pdu1.command_status, pdu2.command_status)
-  end
-
   def test_bind_transceiver_response
     pdu1 = Smpp::Pdu::BindTransceiverResponse.new(nil, Smpp::Pdu::Base::ESME_ROK, config[:system_id])
     pdu2 = Smpp::Pdu::Base.create(pdu1.data)
     assert_instance_of(Smpp::Pdu::BindTransceiverResponse, pdu2)
-    assert_equal(pdu1.system_id, pdu2.system_id)
-    assert_equal(pdu1.sequence_number, pdu2.sequence_number)
-    assert_equal(pdu1.command_status, pdu2.command_status)
-  end
-
-  def test_bind_transmitter_response
-    pdu1 = Smpp::Pdu::BindTransmitterResponse.new(nil, Smpp::Pdu::Base::ESME_ROK, config[:system_id])
-    pdu2 = Smpp::Pdu::Base.create(pdu1.data)
-    assert_instance_of(Smpp::Pdu::BindTransmitterResponse, pdu2)
     assert_equal(pdu1.system_id, pdu2.system_id)
     assert_equal(pdu1.sequence_number, pdu2.sequence_number)
     assert_equal(pdu1.command_status, pdu2.command_status)
@@ -282,7 +242,7 @@ class SmppTest < Test::Unit::TestCase
     assert_equal(pdu1.command_status, pdu2.command_status)
   end
 
-  def test_submit_multi_response
+  def _test_submit_multi_response
     smes = [
       Smpp::Pdu::SubmitMultiResponse::UnsuccessfulSme.new(1,1,'1111111111',  Smpp::Pdu::Base::ESME_RINVDSTADR),
       Smpp::Pdu::SubmitMultiResponse::UnsuccessfulSme.new(1,1,'1111111112',  Smpp::Pdu::Base::ESME_RINVDSTADR),

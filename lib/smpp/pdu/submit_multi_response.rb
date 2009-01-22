@@ -1,7 +1,7 @@
 # Recieving response for an MT message sent to multiple addresses
 # Author: Abhishek Parolkar, (abhishek[at]parolkar.com)
 class Smpp::Pdu::SubmitMultiResponse < Smpp::Pdu::Base
-  class UnsuccessfulSme < 
+  class UnsuccessfulSme 
     Struct.new(:dest_addr_ton, :dest_addr_npi, :destination_addr, :error_status_code)
   end
 
