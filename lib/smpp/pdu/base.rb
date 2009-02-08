@@ -95,7 +95,8 @@ module Smpp::Pdu
 
     # return int as binary string of 4 octets
     def fixed_int(value)
-      sprintf("%c%c%c%c", value >> 24, value >> 16, value >> 8, value & 0xff)
+      arr = [value >> 24, value >> 16, value >> 8, value & 0xff]
+      arr.pack("cccc")
     end
 
     def next_sequence_number
