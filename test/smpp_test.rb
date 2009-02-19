@@ -256,5 +256,13 @@ class SmppTest < Test::Unit::TestCase
     assert_equal(pdu1.sequence_number, pdu2.sequence_number)
     assert_equal(pdu1.command_status, pdu2.command_status)
   end
+  
+  def test_should_parse_ref_and_stat_from_deliver_sm
+    direct = Smpp::Pdu::DeliverSm.new( '1', '2', "419318028472222#id:11f8f46639bd4f7a209016e1a181e3ae sub:001 dlvrd:001 submit date:0902191702 done date:0902191702 stat:DELIVRD err:000 Text:TVILLING: Sl? ut h?'!11f8f46639bd4f7a209016e1a181e3ae", :esm_class => 4)
+    parsed = Smpp::Pdu::Base.create(direct.data)
+    assert_equal("DELIVRD", parsed.stat)
+    assert_equal("11f8f46639bd4f7a209016e1a181e3ae", parsed.msg_reference)
+  end
+  
 
 end

@@ -62,8 +62,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     options[:data_coding], 
     options[:sm_default_msg_id],
     options[:sm_length], 
-    short_message = body.unpack('Z*CCZ*CCZ*CCCZ*Z*CCCCCa*')
-    Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
+    short_message = body.unpack('Z*CCZ*CCZ*CCCZ*Z*CCCCCa*')    
 
     #Note: if the SM is a delivery receipt (esm_class=4) then the short_message _may_ be in this format:  
     # "id:Smsc2013 sub:1 dlvrd:1 submit date:0610171515 done date:0610171515 stat:0 err:0 text:blah"
@@ -73,10 +72,20 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     # For example, Tele2 (Norway):
     # "<msisdn><shortcode>?id:10ea34755d3d4f7a20900cdb3349e549 sub:001 dlvrd:001 submit date:0611011228 done date:0611011230 stat:DELIVRD err:000 Text:abc'!10ea34755d3d4f7a20900cdb3349e549"
     if options[:esm_class] == 4
-      options[:msg_reference] = short_message.scanf('id:%s').to_s
-      # @stat must be parsed according to the SMSC vendor's specifications (see comment above)
-      options[:stat] = 0
-    end
+      msg_ref_match = short_message.match(/id:([^ ]*)/)
+      if msg_ref_match
+        options[:msg_reference] = msg_ref_match[1]
+      end
+      
+      stat_match = short_message.match(/stat:([^ ]*)/)
+      if stat_match
+        options[:stat] = stat_match[1]
+      end
+      
+      Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}, msg_reference=#{options[:msg_reference]}, stat=#{options[:stat]}"
+    else
+      Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
+    end    
     
     new(source_addr, destination_addr, short_message, options, seq) 
   end
