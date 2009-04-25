@@ -8,11 +8,11 @@ The implementation is based on the Ruby/EventMachine library.
 
 === Glossary
 
-* SMSC: SMS Center. Mobile operators normally operate an SMSC in their network. The SMSC stores and forwards SMS messages.
-* MO:   Mobile Originated SMS: originated in a mobile phone, ie. sent by an end user.
-* MT:   Mobile Terminated SMS: terminated in a mobile phone, ie. received by an end user.
-* DR:   Delivery Report, or delivery notification. When you send an MT message, you should receive a DR after a while.
-* PDU:  Protcol Base Unit, the data units that SMPP is comprised of. This implementation does _not_ implement all SMPP PDUs.
+SMSC: SMS Center. Mobile operators normally operate an SMSC in their network. The SMSC stores and forwards SMS messages.
+MO:   Mobile Originated SMS: originated in a mobile phone, ie. sent by an end user.
+MT:   Mobile Terminated SMS: terminated in a mobile phone, ie. received by an end user.
+DR:   Delivery Report, or delivery notification. When you send an MT message, you should receive a DR after a while.
+PDU:  Protcol Base Unit, the data units that SMPP is comprised of. This implementation does _not_ implement all SMPP PDUs.
 
 === Protocol
 
@@ -20,7 +20,7 @@ The SMPP 3.4 protocol spec can be downloaded here: http://smsforum.net/SMPP_v3_4
 
 === Testing/Sample Code
 
-Logica provides an SMPP simulator that you can download from http://opensmpp.logica.com. You can 
+Logica provides an SMPP simulator that you can download from http://opensmpp.logica.com/. You can 
 also sign up for a demo SMPP account at one of the many bulk-SMS providers out there.
 
 For a quick test, download smscsim.jar and smpp.jar from the Logica site, and start the simulator by typing:
@@ -50,8 +50,8 @@ Start the transceiver. Receive delegate callbacks whenever incoming messages or 
     host, 
     port, 
     Smpp::Transceiver, 
-    config,             # configuration property hash
-    delegate            # delegate class that will receive callbacks on MOs and DRs and other events
+    config,             # a property hash 
+	delegate 			# delegate class that will receive callbacks on MOs and DRs and other events
   end
   
   # send a message
@@ -70,4 +70,22 @@ For a more complete example, see examples/sample_gateway.rb
 == LICENSE:
 
 Copyright (c) 2008 Apparat AS
-Released under the MIT license
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
