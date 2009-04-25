@@ -1,4 +1,8 @@
-# the opposite of a client-based receiver, the server transmitter waill send
+# --------
+# This is experimental stuff submitted by taryn@taryneast.org
+# --------
+
+# the opposite of a client-based receiver, the server transmitter will send
 # out MOs to the client when set up
 class Smpp::Server < Smpp::Base
 
