@@ -141,6 +141,9 @@ class Smpp::Transceiver < Smpp::Base
       end
       if pdu.command_status != Pdu::Base::ESME_ROK
         logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
+        if @delegate.respond_to?(:message_rejected)
+          @delegate.message_rejected(self, mt_message_id, pdu.message_id, pdu.command_status, pdu)
+        end
       else
         logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
         if @delegate.respond_to?(:message_accepted)
