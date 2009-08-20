@@ -1,5 +1,5 @@
 Gem::Specification.new do |s|
-  s.name = %q{valdis-ruby-smpp}
+  s.name = %q{ruby-smpp}
   s.version = "0.1.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
