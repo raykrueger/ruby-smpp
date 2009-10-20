@@ -8,6 +8,7 @@
 #   mo_received(transceiver, source_addr, destination_addr, short_message)
 #   delivery_report_received(transceiver, msg_reference, stat, pdu)
 #   message_accepted(transceiver, mt_message_id, smsc_message_id)
+#   message_rejected(transceiver, mt_message_id, smsc_message_id)
 #   bound(transceiver)
 #   unbound(transceiver)
 
@@ -31,7 +32,7 @@ class Smpp::Transceiver < Smpp::Base
   end
 
   # Send an MT SMS message. Delegate will receive message_accepted callback when SMSC 
-  # acknowledges. 
+  # acknowledges, or the message_rejected callback upon error
   def send_mt(message_id, source_addr, destination_addr, short_message, options={})
     logger.debug "Sending MT: #{short_message}"
     if @state == :bound
@@ -141,6 +142,9 @@ class Smpp::Transceiver < Smpp::Base
       end
       if pdu.command_status != Pdu::Base::ESME_ROK
         logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
+        if @delegate.respond_to?(:message_rejected)
+          @delegate.message_rejected(self, mt_message_id, pdu.message_id)
+        end
       else
         logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
         if @delegate.respond_to?(:message_accepted)
@@ -156,6 +160,9 @@ class Smpp::Transceiver < Smpp::Base
       end
       if pdu.command_status != Pdu::Base::ESME_ROK
         logger.error "Error status in SubmitMultiResponse: #{pdu.command_status}"
+        if @delegate.respond_to?(:message_rejected)
+          @delegate.message_rejected(self, mt_message_id, pdu.message_id)
+        end
       else
         logger.info "Got OK SubmitMultiResponse (#{pdu.message_id} -> #{mt_message_id})"
         if @delegate.respond_to?(:message_accepted)

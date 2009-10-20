@@ -31,7 +31,11 @@ class Delegate
   end
   
   def message_accepted(transceiver, mt_message_id, smsc_message_id)
-    puts "** message_sent"
+    puts "** message_accepted"
+  end
+
+  def message_rejected(transceiver, mt_message_id, smsc_message_id)
+    puts "** message_rejected"
   end
   
   def bound(transceiver)

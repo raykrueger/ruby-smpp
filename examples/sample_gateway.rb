@@ -91,7 +91,11 @@ class SampleGateway
   end
 
   def message_accepted(transceiver, mt_message_id, smsc_message_id)
-    logger.info "Delegate: message_sent: id #{mt_message_id} smsc ref id: #{smsc_message_id}"
+    logger.info "Delegate: message_accepted: id #{mt_message_id} smsc ref id: #{smsc_message_id}"
+  end
+
+  def message_rejected(transceiver, mt_message_id, smsc_message_id)
+    logger.info "Delegate: message_rejected: id #{mt_message_id} smsc ref id: #{smsc_message_id}"
   end
 
   def bound(transceiver)
