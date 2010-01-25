@@ -6,51 +6,8 @@ require 'stringio'
 require 'smpp'
 
 # a server which immediately requests the client to unbind
-module Server1  
-  def receive_data(data)
-    send_data Smpp::Pdu::Unbind.new.data    
-  end
-end
-
-module Server2
-  def receive_data(data)
-    # problem: our Pdu's should have factory methods for "both ways"; ie. when created 
-    # by client, and when created from wire data.
-    send_data Smpp::Pdu::SubmitSmResponse.new(1, 2, "100").data
-  end
-end
-
-# the delagate receives callbacks when interesting things happen on the connection
-class Delegate
-  def mo_received(transceiver, source_addr, destination_addr, short_message)
-    puts "** mo_received"
-  end
-  
-  def delivery_report_received(transceiver, msg_reference, stat, pdu)
-    puts "** delivery_report_received"
-  end
-  
-  def message_accepted(transceiver, mt_message_id, smsc_message_id)
-    puts "** message_accepted"
-  end
-
-  def message_rejected(transceiver, mt_message_id, smsc_message_id)
-    puts "** message_rejected"
-  end
-  
-  def bound(transceiver)
-    puts "** bound"
-  end
-  
-  def unbound(transceiver)  
-    puts "** unbound"
-    EventMachine::stop_event_loop
-  end
-end
-
-class SmppTest < Test::Unit::TestCase
-  
-  def config
+module Server
+  def self.config
     {
       :host => 'localhost',
       :port => 2775,
@@ -65,13 +22,159 @@ class SmppTest < Test::Unit::TestCase
       :destination_address_range => ''
     }
   end
+
+  module Unbind
+    def receive_data(data)
+      send_data Smpp::Pdu::Unbind.new.data
+    end
+  end
+
+  module SubmitSmResponse
+    def receive_data(data)
+      # problem: our Pdu's should have factory methods for "both ways"; ie. when created
+      # by client, and when created from wire data.
+      send_data Smpp::Pdu::SubmitSmResponse.new(1, 2, "100").data
+    end
+  end
+
+  module SubmitSmResponseWithErrorStatus
+    attr_reader :state #state=nil => bind => state=bound => send =>state=sent => unbind => state=unbound
+    def receive_data(data)
+      if @state.nil?
+        @state = 'bound'
+        pdu = Smpp::Pdu::Base.create(data)
+        response_pdu = Smpp::Pdu::BindTransceiverResponse.new(pdu.sequence_number,Smpp::Pdu::Base::ESME_ROK,Server::config[:system_id])
+        send_data response_pdu.data
+      elsif @state == 'bound'
+        @state = 'sent'
+        pdu = Smpp::Pdu::Base.create(data)
+        pdu.to_human
+        send_data Smpp::Pdu::SubmitSmResponse.new(pdu.sequence_number, Smpp::Pdu::Base::ESME_RINVDSTADR, pdu.body).data
+        #send_data Smpp::Pdu::SubmitSmResponse.new(1, 2, "100").data
+      elsif @state == 'sent'
+        @state = 'unbound'
+        send_data Smpp::Pdu::Unbind.new.data
+      else
+        raise "unexpected state"
+      end
+    end
+  end
+
+end
+
+
+# the delagate receives callbacks when interesting things happen on the connection
+class Delegate
+
+  def mo_received(transceiver, source_addr, destination_addr, short_message)
+    puts "** mo_received"
+  end
+
+  def delivery_report_received(transceiver, msg_reference, stat, pdu)
+    puts "** delivery_report_received"
+  end
+
+  def message_accepted(transceiver, mt_message_id, smsc_message_id)
+    puts "** message_sent"
+  end
+
+  def message_rejected(transceiver, mt_message_id, smsc_message_id, stat, pdu)
+    puts "** message_rejected"
+  end
+
+  def bound(transceiver)
+    puts "** bound"
+  end
+
+  def unbound(transceiver)
+    puts "** unbound"
+    EventMachine::stop_event_loop
+  end
+end
+
+#TODO This should be made prettier with mocha
+class ResponsiveDelegate
+  attr_reader :seq, :event_counter
+
+  def initialize
+    @seq = 0
+    @event_counter = nil
+  end
+  def seq
+    @seq += 1
+  end
+  def count_function
+    func = caller(1)[0].split("`")[1].split("'")[0].to_sym
+    @event_counter = {} unless @event_counter.is_a?(Hash)
+    @event_counter[func] = 0 if @event_counter[func].nil?
+    @event_counter[func]+=1
+  end
+
+  def mo_received(transceiver, source_addr, destination_addr, short_message)
+    count_function
+    puts "** mo_received"
+  end
+  
+  def delivery_report_received(transceiver, msg_reference, stat, pdu)
+    count_function
+    puts "** delivery_report_received"
+  end
+  
+  def message_accepted(transceiver, mt_message_id, smsc_message_id)
+    count_function
+    puts "** message_sent"
+    #sending messages from delegate to escape making a fake message sender - not nice :(
+    $tx.send_mt(self.seq, 1, 2, "short_message @ message_accepted")
+  end
+
+  def message_rejected(transceiver, mt_message_id, smsc_message_id, stat, pdu)
+    count_function
+    puts "** message_rejected"
+    $tx.send_mt(self.seq, 1, 2, "short_message @ message_rejected")
+  end
+  
+  def bound(transceiver)
+    count_function
+    puts "** bound"
+    $tx.send_mt(self.seq, 1, 2, "short_message @ bound")
+  end
+  
+  def unbound(transceiver)
+    count_function
+    puts "** unbound"
+    EventMachine::stop_event_loop
+  end
+end
+
+class Poller
+  def start
+    
+  end
+end
+
+
+class SmppTest < Test::Unit::TestCase
+  
+  def config
+    Server::config
+  end
   
   def test_transceiver_should_bind_and_unbind_then_stop
     EventMachine.run {
-      EventMachine.start_server "localhost", 9000, Server1
+      EventMachine.start_server "localhost", 9000, Server::Unbind
       EventMachine.connect "localhost", 9000, Smpp::Transceiver, config, Delegate.new
     }
     # should not hang here: the server's response should have caused the client to terminate
+  end
+
+  def test_transceiver_api_should_respond_to_message_rejected
+    $tx = nil
+    delegate = ResponsiveDelegate.new
+    EventMachine.run {
+      EventMachine.start_server "localhost", 9000, Server::SubmitSmResponseWithErrorStatus
+      $tx = EventMachine.connect "localhost", 9000, Smpp::Transceiver, config, delegate
+    }
+    assert_equal(delegate.event_counter[:message_rejected], 1)
   end
 
   def test_bind_transceiver
@@ -160,6 +263,11 @@ class SmppTest < Test::Unit::TestCase
     assert_equal(pdu1.sm_length, pdu2.sm_length)
     assert_equal(pdu1.sequence_number, pdu2.sequence_number)
     assert_equal(pdu1.command_status, pdu2.command_status)
+  end
+
+  def test_submit_sm_receiving_invalid_status
+    pdu1 = Smpp::Pdu::SubmitSm.new( '11111', '1111111111', "This is a test" )
+    pdu2 = Smpp::Pdu::Base.create(pdu1.data)
   end
 
   def test_deliver_sm_response

@@ -8,7 +8,7 @@
 #   mo_received(transceiver, source_addr, destination_addr, short_message)
 #   delivery_report_received(transceiver, msg_reference, stat, pdu)
 #   message_accepted(transceiver, mt_message_id, smsc_message_id)
-#   message_rejected(transceiver, mt_message_id, smsc_message_id)
+#   message_rejected(transceiver, mt_message_id, smsc_message_id, pdu_command_status, pdu_command_status)
 #   bound(transceiver)
 #   unbound(transceiver)
 
@@ -143,7 +143,7 @@ class Smpp::Transceiver < Smpp::Base
       if pdu.command_status != Pdu::Base::ESME_ROK
         logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
         if @delegate.respond_to?(:message_rejected)
-          @delegate.message_rejected(self, mt_message_id, pdu.message_id)
+          @delegate.message_rejected(self, mt_message_id, pdu.message_id, pdu.command_status, pdu)
         end
       else
         logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
@@ -161,7 +161,7 @@ class Smpp::Transceiver < Smpp::Base
       if pdu.command_status != Pdu::Base::ESME_ROK
         logger.error "Error status in SubmitMultiResponse: #{pdu.command_status}"
         if @delegate.respond_to?(:message_rejected)
-          @delegate.message_rejected(self, mt_message_id, pdu.message_id)
+          @delegate.message_rejected(self, mt_message_id, pdu.message_id, pdu.command_status, pdu)
         end
       else
         logger.info "Got OK SubmitMultiResponse (#{pdu.message_id} -> #{mt_message_id})"
