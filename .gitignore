@@ -3,3 +3,4 @@ log/*.log
 nbproject
 pkg
 *.gem
+*.swp
