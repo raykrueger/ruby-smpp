@@ -63,6 +63,10 @@ module Smpp::Pdu
     ENQUIRE_LINK_RESP     = 0X80000015
     SUBMIT_MULTI	        = 0X00000021
     SUBMIT_MULTI_RESP     = 0X80000021
+
+    OPTIONAL_RECEIPTED_MESSAGE_ID = 0x001E
+    OPTIONAL_MESSAGE_STATE        = 0x0427
+
     # PDU sequence number. 
     @@seq = [Time.now.to_i]
 
@@ -123,6 +127,8 @@ module Smpp::Pdu
       end
       len, cmd, status, seq = header.unpack('N4')
       body = data[16..-1]
+
+      Smpp::Base.logger.debug "PDU: #{data.inspect}"
           
       #if a class has been registered to handle this command_id, try
       #to create an instance from the wire data
@@ -137,6 +143,19 @@ module Smpp::Pdu
     #maps a subclass as the handler for a particulular pdu
     def Base.handles_cmd(command_id)
       @@cmd_map[command_id] = self
+    end
+
+    def Base.optional_parameters(remaining_bytes)
+      optionals = []
+      while not remaining_bytes.empty?
+        optional = {}
+        tag, optional[:length], remaining_bytes = remaining_bytes.unpack('H4na*')
+        optional[:tag] = tag.hex
+        optional[:value] = remaining_bytes.slice!(0...optional[:length])
+        optionals << optional
+      end
+      Smpp::Base.logger.debug "Optional params:#{optionals.inspect}"
+      return optionals
     end
 
   end

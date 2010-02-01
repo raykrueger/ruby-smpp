@@ -4,7 +4,8 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
   attr_reader :service_type, :source_addr_ton, :source_addr_npi, :source_addr, :dest_addr_ton, :dest_addr_npi, 
               :destination_addr, :esm_class, :protocol_id, :priority_flag, :schedule_delivery_time, 
               :validity_period, :registered_delivery, :replace_if_present_flag, :data_coding, 
-              :sm_default_msg_id, :sm_length, :stat, :msg_reference, :udh, :short_message
+              :sm_default_msg_id, :sm_length, :stat, :msg_reference, :udh, :short_message,
+              :message_state, :receipted_message_id
 
   def initialize(source_addr, destination_addr, short_message, options={}, seq=nil) 
     
@@ -32,6 +33,8 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     #fields set for delivery report
     @stat                    = options[:stat]
     @msg_reference           = options[:msg_reference]
+    @receipted_message_id    = options[:receipted_message_id]
+    @message_state           = options[:message_state]
 
     pdu_body = sprintf("%s\0%c%c%s\0%c%c%s\0%c%c%c%s\0%s\0%c%c%c%c%c%s", @service_type, @source_addr_ton, @source_addr_npi, @source_addr,
     @dest_addr_ton, @dest_addr_npi, @destination_addr, @esm_class, @protocol_id, @priority_flag, @schedule_delivery_time, @validity_period,
@@ -62,7 +65,23 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     options[:data_coding], 
     options[:sm_default_msg_id],
     options[:sm_length], 
-    short_message = body.unpack('Z*CCZ*CCZ*CCCZ*Z*CCCCCa*')    
+    remaining_bytes = body.unpack('Z*CCZ*CCZ*CCCZ*Z*CCCCCa*')    
+
+    short_message = remaining_bytes.slice!(0...options[:sm_length])
+
+    #everything left in remaining_bytes is 3.4 optional parameters
+    optional_parameters(remaining_bytes).each do |tlv|
+      if OPTIONAL_MESSAGE_STATE == tlv[:tag]
+        puts "OPTIONAL_MESSAGE_STATE #{tlv[:value].inspect}"
+        options[:message_state] = tlv[:value].unpack('C')
+
+      elsif OPTIONAL_RECEIPTED_MESSAGE_ID == tlv[:tag]
+        puts "OPTIONAL_RECEIPTED_MESSAGE_ID #{tlv[:value].inspect}"
+        options[:receipted_message_id] = tlv[:value].unpack('A*')
+
+      end
+    end
+
 
     #Note: if the SM is a delivery receipt (esm_class=4) then the short_message _may_ be in this format:  
     # "id:Smsc2013 sub:1 dlvrd:1 submit date:0610171515 done date:0610171515 stat:0 err:0 text:blah"
