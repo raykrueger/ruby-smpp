@@ -1,4 +1,5 @@
 Maintainer:
+  Ray Krueger <raykrueger@gmail.com>
   August Z. Flatby <august@apparat.no>
 
 Contributors:
