@@ -144,13 +144,13 @@ module Smpp::Pdu
     end
 
     def Base.optional_parameters(remaining_bytes)
-      optionals = []
+      optionals = {}
       while not remaining_bytes.empty?
         optional = {}
         tag, optional[:length], remaining_bytes = remaining_bytes.unpack('H4na*')
         optional[:tag] = tag.hex
         optional[:value] = remaining_bytes.slice!(0...optional[:length])
-        optionals << optional
+        optionals[tag.hex] = optional
       end
       
       return optionals

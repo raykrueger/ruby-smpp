@@ -5,7 +5,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
               :destination_addr, :esm_class, :protocol_id, :priority_flag, :schedule_delivery_time, 
               :validity_period, :registered_delivery, :replace_if_present_flag, :data_coding, 
               :sm_default_msg_id, :sm_length, :stat, :msg_reference, :udh, :short_message,
-              :message_state, :receipted_message_id
+              :message_state, :receipted_message_id, :optional_parameters
 
   def initialize(source_addr, destination_addr, short_message, options={}, seq=nil) 
     
@@ -35,6 +35,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     @msg_reference           = options[:msg_reference]
     @receipted_message_id    = options[:receipted_message_id]
     @message_state           = options[:message_state]
+    @optional_parameters     = options[:optional_parameters]
 
     pdu_body = sprintf("%s\0%c%c%s\0%c%c%s\0%c%c%c%s\0%s\0%c%c%c%c%c%s", @service_type, @source_addr_ton, @source_addr_npi, @source_addr,
     @dest_addr_ton, @dest_addr_npi, @destination_addr, @esm_class, @protocol_id, @priority_flag, @schedule_delivery_time, @validity_period,
@@ -70,16 +71,20 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     short_message = remaining_bytes.slice!(0...options[:sm_length])
 
     #everything left in remaining_bytes is 3.4 optional parameters
-    optional_parameters(remaining_bytes).each do |tlv|
-      if OPTIONAL_MESSAGE_STATE == tlv[:tag]
+    options[:optional_parameters] = optional_parameters(remaining_bytes)
+
+    #parse the 'standard' optional parameters for delivery receipts
+    options[:optional_parameters].each do |tag, tlv|
+      if OPTIONAL_MESSAGE_STATE == tag
         value = tlv[:value].unpack('C')
         options[:message_state] = value[0] if value
 
-      elsif OPTIONAL_RECEIPTED_MESSAGE_ID == tlv[:tag]
+      elsif OPTIONAL_RECEIPTED_MESSAGE_ID == tag
         value = tlv[:value].unpack('A*')
         options[:receipted_message_id] = value[0] if value
       end
     end
+
 
 
     #Note: if the SM is a delivery receipt (esm_class=4) then the short_message _may_ be in this format:  
