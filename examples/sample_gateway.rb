@@ -7,8 +7,7 @@
 # MOs and DRs will be dumped to standard out.
 
 require 'rubygems'
-gem 'ruby-smpp'
-require 'smpp'
+require File.dirname(__FILE__) + '/../lib/smpp'
 
 LOGFILE = File.dirname(__FILE__) + "/sms_gateway.log"
 Smpp::Base.logger = Logger.new(LOGFILE)
@@ -82,20 +81,20 @@ class SampleGateway
   
   # ruby-smpp delegate methods 
 
-  def mo_received(transceiver, source_addr, destination_addr, short_message)
-    logger.info "Delegate: mo_received: from #{source_addr} to #{destination_addr}: #{short_message}"
+  def mo_received(transceiver, pdu)
+    logger.info "Delegate: mo_received: from #{pdu.source_addr} to #{pdu.destination_addr}: #{pdu.short_message}"
   end
 
-  def delivery_report_received(transceiver, msg_reference, stat, pdu)
-    logger.info "Delegate: delivery_report_received: ref #{msg_reference} stat #{stat} pdu #{pdu}"
+  def delivery_report_received(transceiver, pdu)
+    logger.info "Delegate: delivery_report_received: ref #{pdu.msg_reference} stat #{pdu.stat}"
   end
 
-  def message_accepted(transceiver, mt_message_id, smsc_message_id)
-    logger.info "Delegate: message_accepted: id #{mt_message_id} smsc ref id: #{smsc_message_id}"
+  def message_accepted(transceiver, mt_message_id, pdu)
+    logger.info "Delegate: message_accepted: id #{mt_message_id} smsc ref id: #{pdu.message_id}"
   end
 
-  def message_rejected(transceiver, mt_message_id, smsc_message_id)
-    logger.info "Delegate: message_rejected: id #{mt_message_id} smsc ref id: #{smsc_message_id}"
+  def message_rejected(transceiver, mt_message_id, pdu)
+    logger.info "Delegate: message_rejected: id #{mt_message_id} smsc ref id: #{pdu.message_id}"
   end
 
   def bound(transceiver)
@@ -117,11 +116,11 @@ begin
   # Consult the SMPP spec or your mobile operator for the correct settings of 
   # the other properties.
   config = {
-    :host => 'localhost',
+    :host => '127.0.0.1',
     :port => 6000,
     :system_id => 'hugo',
     :password => 'ggoohu',
-    :system_type => 'vma', # default given according to SMPP 3.4 Spec
+    :system_type => '', # default given according to SMPP 3.4 Spec
     :interface_version => 52,
     :source_ton  => 0,
     :source_npi => 1,

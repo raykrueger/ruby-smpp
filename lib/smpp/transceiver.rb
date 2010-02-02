@@ -5,10 +5,10 @@
 # The transceiver accepts a delegate object that may implement 
 # the following (all optional) methods:
 #
-#   mo_received(transceiver, source_addr, destination_addr, short_message)
-#   delivery_report_received(transceiver, msg_reference, stat, pdu)
-#   message_accepted(transceiver, mt_message_id, smsc_message_id)
-#   message_rejected(transceiver, mt_message_id, smsc_message_id, pdu_command_status, pdu_command_status)
+#   mo_received(transceiver, pdu)
+#   delivery_report_received(transceiver, pdu)
+#   message_accepted(transceiver, mt_message_id, pdu)
+#   message_rejected(transceiver, mt_message_id, pdu)
 #   bound(transceiver)
 #   unbound(transceiver)
 
@@ -107,12 +107,12 @@ class Smpp::Transceiver < Smpp::Base
       if pdu.esm_class != 4
         # MO message
         if @delegate.respond_to?(:mo_received)
-          @delegate.mo_received(self, pdu.source_addr, pdu.destination_addr, pdu.short_message)
+          @delegate.mo_received(self, pdu)
         end
       else
         # Delivery report
         if @delegate.respond_to?(:delivery_report_received)
-          @delegate.delivery_report_received(self, pdu.msg_reference.to_s, pdu.stat, pdu)
+          @delegate.delivery_report_received(self, pdu)
         end
       end     
     when Pdu::BindTransceiverResponse
@@ -143,12 +143,12 @@ class Smpp::Transceiver < Smpp::Base
       if pdu.command_status != Pdu::Base::ESME_ROK
         logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
         if @delegate.respond_to?(:message_rejected)
-          @delegate.message_rejected(self, mt_message_id, pdu.message_id, pdu.command_status, pdu)
+          @delegate.message_rejected(self, mt_message_id, pdu)
         end
       else
         logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
         if @delegate.respond_to?(:message_accepted)
-          @delegate.message_accepted(self, mt_message_id, pdu.message_id)
+          @delegate.message_accepted(self, mt_message_id, pdu)
         end        
       end
       # Now we got the SMSC message id; create pending delivery report.
@@ -161,12 +161,12 @@ class Smpp::Transceiver < Smpp::Base
       if pdu.command_status != Pdu::Base::ESME_ROK
         logger.error "Error status in SubmitMultiResponse: #{pdu.command_status}"
         if @delegate.respond_to?(:message_rejected)
-          @delegate.message_rejected(self, mt_message_id, pdu.message_id, pdu.command_status, pdu)
+          @delegate.message_rejected(self, mt_message_id, pdu)
         end
       else
         logger.info "Got OK SubmitMultiResponse (#{pdu.message_id} -> #{mt_message_id})"
         if @delegate.respond_to?(:message_accepted)
-          @delegate.message_accepted(self, mt_message_id, pdu.message_id)
+          @delegate.message_accepted(self, mt_message_id, pdu)
         end
       end
     else

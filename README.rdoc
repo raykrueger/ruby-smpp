@@ -6,6 +6,8 @@ Ruby-SMPP is a Ruby implementation of the SMPP v3.4 protocol. It is suitable for
 
 The implementation is based on the Ruby/EventMachine library.
 
+<b>NOTE: Breaking change from 0.1.2 to 0.1.3</b>. See below.
+
 === Glossary
 
 
@@ -58,6 +60,16 @@ Start the transceiver. Receive delegate callbacks whenever incoming messages or 
   
   # send a message
   tx.send_mt(id, from, to, body)
+
+As of 0.1.3 the delegate method signatures are as follows:
+*   mo_received(transceiver, deliver_sm_pdu)
+*   delivery_report_received(transceiver, deliver_sm_pdu)
+*   message_accepted(transceiver, mt_message_id, submit_sm_response_pdu)
+*   message_rejected(transceiver, mt_message_id, submit_sm_response_pdu)
+*   bound(transceiver)
+*   unbound(transceiver)
+
+Where 'pdu' above is the actual actual instance of the Smpp:Pdu:: class created.
 
 For a more complete example, see examples/sample_gateway.rb
 

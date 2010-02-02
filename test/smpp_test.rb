@@ -2,7 +2,6 @@ $:.unshift File.dirname(__FILE__) + '/../lib/'
 
 require 'rubygems'
 require 'test/unit'
-require 'stringio'
 require 'smpp'
 
 # a server which immediately requests the client to unbind
@@ -66,19 +65,19 @@ end
 # the delagate receives callbacks when interesting things happen on the connection
 class Delegate
 
-  def mo_received(transceiver, source_addr, destination_addr, short_message)
+  def mo_received(transceiver, pdu)
     puts "** mo_received"
   end
 
-  def delivery_report_received(transceiver, msg_reference, stat, pdu)
+  def delivery_report_received(transceiver, pdu)
     puts "** delivery_report_received"
   end
 
-  def message_accepted(transceiver, mt_message_id, smsc_message_id)
+  def message_accepted(transceiver, mt_message_id, pdu)
     puts "** message_sent"
   end
 
-  def message_rejected(transceiver, mt_message_id, smsc_message_id, stat, pdu)
+  def message_rejected(transceiver, mt_message_id, pdu)
     puts "** message_rejected"
   end
 
@@ -110,24 +109,24 @@ class ResponsiveDelegate
     @event_counter[func]+=1
   end
 
-  def mo_received(transceiver, source_addr, destination_addr, short_message)
+  def mo_received(transceiver, pdu)
     count_function
     puts "** mo_received"
   end
   
-  def delivery_report_received(transceiver, msg_reference, stat, pdu)
+  def delivery_report_received(transceiver, pdu)
     count_function
     puts "** delivery_report_received"
   end
   
-  def message_accepted(transceiver, mt_message_id, smsc_message_id)
+  def message_accepted(transceiver, mt_message_id, pdu)
     count_function
     puts "** message_sent"
     #sending messages from delegate to escape making a fake message sender - not nice :(
     $tx.send_mt(self.seq, 1, 2, "short_message @ message_accepted")
   end
 
-  def message_rejected(transceiver, mt_message_id, smsc_message_id, stat, pdu)
+  def message_rejected(transceiver, mt_message_id, pdu)
     count_function
     puts "** message_rejected"
     $tx.send_mt(self.seq, 1, 2, "short_message @ message_rejected")

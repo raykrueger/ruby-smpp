@@ -3,9 +3,8 @@
 # Sample SMPP SMS Gateway. 
 
 require 'rubygems'
-gem 'ruby-smpp'
-require 'smpp'
-require 'smpp/server'
+require File.dirname(__FILE__) + '/../lib/smpp'
+require File.dirname(__FILE__) + '/../lib/smpp/server'
 
 # set up logger
 Smpp::Base.logger = Logger.new('smsc.log')

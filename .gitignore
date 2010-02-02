@@ -1,4 +1,4 @@
-log/*.log
+*.log
 .DS_Store
 nbproject
 pkg
