@@ -72,11 +72,12 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     #everything left in remaining_bytes is 3.4 optional parameters
     optional_parameters(remaining_bytes).each do |tlv|
       if OPTIONAL_MESSAGE_STATE == tlv[:tag]
-        options[:message_state] = tlv[:value].unpack('C')
+        value = tlv[:value].unpack('C')
+        options[:message_state] = value[0] if value
 
       elsif OPTIONAL_RECEIPTED_MESSAGE_ID == tlv[:tag]
-        options[:receipted_message_id] = tlv[:value].unpack('A*')
-
+        value = tlv[:value].unpack('A*')
+        options[:receipted_message_id] = value[0] if value
       end
     end
 
