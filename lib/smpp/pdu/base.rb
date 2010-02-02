@@ -61,7 +61,7 @@ module Smpp::Pdu
     CANCEL_SM_RESP        = 0X80000008 
     ENQUIRE_LINK          = 0X00000015 
     ENQUIRE_LINK_RESP     = 0X80000015
-    SUBMIT_MULTI	        = 0X00000021
+    SUBMIT_MULTI          = 0X00000021
     SUBMIT_MULTI_RESP     = 0X80000021
 
     OPTIONAL_RECEIPTED_MESSAGE_ID = 0x001E
@@ -108,7 +108,7 @@ module Smpp::Pdu
     end
 
     def Base.next_sequence_number
-      @@seq.synchronize do 
+      @@seq.synchronize do
         (@@seq[0] += 1) % 512
       end
     end
@@ -128,14 +128,12 @@ module Smpp::Pdu
       len, cmd, status, seq = header.unpack('N4')
       body = data[16..-1]
 
-      Smpp::Base.logger.debug "PDU: #{data.inspect}"
-          
       #if a class has been registered to handle this command_id, try
       #to create an instance from the wire data
       if @@cmd_map[cmd]
         @@cmd_map[cmd].from_wire_data(seq, status, body)
       else
-        Smpp::Base.logger.error "Unknown PDU: 0x#{cmd.to_s(16)}"
+        Smpp::Base.logger.error "Unknown PDU: #{"0x%08x" % cmd}"
         return nil
       end
     end
@@ -154,7 +152,7 @@ module Smpp::Pdu
         optional[:value] = remaining_bytes.slice!(0...optional[:length])
         optionals << optional
       end
-      Smpp::Base.logger.debug "Optional params:#{optionals.inspect}"
+      
       return optionals
     end
 
