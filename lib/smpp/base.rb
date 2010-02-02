@@ -165,6 +165,7 @@ module Smpp
     end
 
     def hex_debug(data, prefix = "")
+      return unless @config[:hex_debug]
       logger.debug do
         message = "Hex dump follows:\n"
         hexdump(data).each_line do |line| 
