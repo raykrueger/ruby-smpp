@@ -1,3 +1,49 @@
-0.1.3
+= 0.1.3
+* Transition maintenance from August to Ray Krueger
 * Changed the expected signature of transceiver delegates to use the full PDU instead of picking off attributes one by one
 * Added support for parsing optional parameters from delivery receipts in deliver_sm PDUs (this is also the fix for trailing bytes from MOs)
+
+= 0.1.2 2009.01.22
+
+== Delegate methods
+
+- Some API breakage has been introduced in order to allow a delegate callback model from the transceiver. Also, the Receiver and Transmitter classes have been removed due to bad code reuse.
+
+= 2008.12.11
+
+== Updates from Jon Wood:
+
+- Closes connections cleanly instead of stopping the event loop.
+- Adds a send_concat_mt method to Transceivers (not implemented for Transmitter/Receiver), which does the neccesary encoding and message splitting to send messages > 160 characters by splitting them into multiple parts.
+
+= 2008.10.20
+ 
+== Patch from Josh Bryan:
+
+Fixes smpp/base.rb so that it can handle partial pdu's and multiple pdu's available on the stream. Previously, base.rb assumed that all data available on the TCP stream constituted the next pdu. Though this often works in low load environments, moderately high traffic environments often see multiple pdu's back to back on the stream before event machine cycles through another turn of the reactor. Also, pdu's can be split over multiple TCP packets. Thus, incomplete or multiple pdu's may be delivered to Base#receive_data, and Base needs to be able buffer and split the pdu's.
+
+= 2008.10.13
+ 
+== Patch from Taryn East:
+ 
+I added the receiver and transmitter equivalents of the transmitter class, and also hacked in some code that would support basic setup of an smpp server. Note: we were only using this to set up a test-harness for our own ruby-smpp code, so it's pretty basic and doesn't support all messages - or even do anything useful with an incoming deliver_sm. But it's better than nothing at all ;)
+
+NOTE: Taryn's patch currently lives in a separate branch (taryn-patch), awaiting merge.
+
+= 2008.06.25
+
+== Check-ins from Abhishek Parolkar
+
+I have implemented 4.5.1 section of SMPPv3.4: support for sending an MT message to multiple destination addresses.
+
+- Added system_type paramenter to BindTransceiver.new
+- Small change in submit_sm to discard '@' char in message push
+- Made submit_sm more configurable with options
+- Added PDU examples for submit_sm
+- Added example to use submit_multi and submit_sm
+ 
+= 2008.04.07
+ 
+== Initial release (August Z. Flatby)
+
+My first open source project after all these years! Ah.. it feels good.
