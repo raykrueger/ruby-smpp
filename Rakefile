@@ -4,6 +4,7 @@ require 'rake'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
+    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
     gem.name = "ruby-smpp"
     gem.summary = %Q{Ruby implementation of the SMPP protocol, based on EventMachine.}
     gem.description = gem.summary + " SMPP is a protocol that allows ordinary people outside the mobile network to exchange SMS messages directly with mobile operators."
@@ -15,8 +16,6 @@ begin
     gem.extra_rdoc_files = ["README.rdoc", "CHANGELOG", "CONTRIBUTORS.txt"]
 
     gem.add_dependency "eventmachine", ">= 0.10.0"
-    gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
