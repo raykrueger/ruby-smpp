@@ -5,9 +5,9 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ruby-smpp}
-  s.version = "0.1.3.pre1"
+  s.version = "0.1.3"
 
-  s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
+  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ray Krueger", "August Z. Flatby"]
   s.date = %q{2010-02-05}
   s.description = %q{Ruby implementation of the SMPP protocol, based on EventMachine. SMPP is a protocol that allows ordinary people outside the mobile network to exchange SMS messages directly with mobile operators.}
@@ -71,14 +71,11 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<eventmachine>, [">= 0.10.0"])
-      s.add_development_dependency(%q<thoughtbot-shoulda>, [">= 0"])
     else
       s.add_dependency(%q<eventmachine>, [">= 0.10.0"])
-      s.add_dependency(%q<thoughtbot-shoulda>, [">= 0"])
     end
   else
     s.add_dependency(%q<eventmachine>, [">= 0.10.0"])
-    s.add_dependency(%q<thoughtbot-shoulda>, [">= 0"])
   end
 end
 
