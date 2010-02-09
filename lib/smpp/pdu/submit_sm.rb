@@ -4,7 +4,7 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
   attr_reader :service_type, :source_addr_ton, :source_addr_npi, :source_addr, :dest_addr_ton, :dest_addr_npi, 
               :destination_addr, :esm_class, :protocol_id, :priority_flag, :schedule_delivery_time, 
               :validity_period, :registered_delivery, :replace_if_present_flag, :data_coding, 
-              :sm_default_msg_id, :sm_length, :udh, :short_message
+              :sm_default_msg_id, :sm_length, :udh, :short_message, :optional_parameters
 
   
   # Note: short_message (the SMS body) must be in iso-8859-1 format
@@ -33,10 +33,16 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     payload                  = @udh ? @udh + @short_message : @short_message 
     @sm_length               = payload.length
     
+    @optional_parameters     = options[:optional_parameters]
+    
     # craft the string/byte buffer
     pdu_body = sprintf("%s\0%c%c%s\0%c%c%s\0%c%c%c%s\0%s\0%c%c%c%c%c%s", @service_type, @source_addr_ton, @source_addr_npi, @source_addr,
     @dest_addr_ton, @dest_addr_npi, @destination_addr, @esm_class, @protocol_id, @priority_flag, @schedule_delivery_time, @validity_period,
     @registered_delivery, @replace_if_present_flag, @data_coding, @sm_default_msg_id, @sm_length, payload)
+
+    if @optional_parameters
+      pdu_body << optional_parameters_to_buffer(@optional_parameters)
+    end
 
     seq ||= next_sequence_number
 
@@ -70,8 +76,14 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     options[:data_coding], 
     options[:sm_default_msg_id],
     options[:sm_length], 
-    short_message = body.unpack('Z*CCZ*CCZ*CCCZ*Z*CCCCCa*')
-    Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
+    remaining_bytes = body.unpack('Z*CCZ*CCZ*CCCZ*Z*CCCCCa*')
+
+    short_message = remaining_bytes.slice!(0...options[:sm_length])
+
+    #everything left in remaining_bytes is 3.4 optional parameters
+    options[:optional_parameters] = optional_parameters(remaining_bytes)
+
+    Smpp::Base.logger.debug "SubmitSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
 
     new(source_addr, destination_addr, short_message, options, seq) 
   end

@@ -98,9 +98,30 @@ module Smpp::Pdu
     end
 
     # return int as binary string of 4 octets
-    def fixed_int(value)
+    def Base.fixed_int(value)
       arr = [value >> 24, value >> 16, value >> 8, value & 0xff]
       arr.pack("cccc")
+    end
+
+    def fixed_int(value)
+      Base.fixed_int(value)
+    end
+
+    #expects a hash like {tag => {:tag => tag, :length => length, :value => value}}
+    def Base.optional_parameters_to_buffer(optionals)
+      output = ""
+      optionals.each do |tag, tlv|
+        length = tlv[:value].length
+        buffer = []
+        buffer += [tag >> 8, tag & 0xff]
+        buffer += [length >> 8, length & 0xff]
+        output << buffer.pack('cccc') << tlv[:value]
+      end
+      output
+    end
+
+    def optional_parameters_to_buffer(optionals)
+      Base.optional_parameters_to_buffer(optionals)
     end
 
     def next_sequence_number

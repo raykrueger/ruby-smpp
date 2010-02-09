@@ -165,7 +165,10 @@ module Smpp
     end
 
     def hex_debug(data, prefix = "")
-      return unless @config[:hex_debug]
+      Base.hex_debug(data, prefix)
+    end
+
+    def Base.hex_debug(data, prefix = "")
       logger.debug do
         message = "Hex dump follows:\n"
         hexdump(data).each_line do |line| 
@@ -175,7 +178,7 @@ module Smpp
       end
     end
 
-    def hexdump(target)
+    def Base.hexdump(target)
       width=16
       group=2
 
