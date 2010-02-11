@@ -107,15 +107,15 @@ module Smpp::Pdu
       Base.fixed_int(value)
     end
 
-    #expects a hash like {tag => {:tag => tag, :length => length, :value => value}}
+    #expects a hash like {tag => Smpp::OptionalParameter}
     def Base.optional_parameters_to_buffer(optionals)
       output = ""
-      optionals.each do |tag, tlv|
-        length = tlv[:value].length
+      optionals.each do |tag, optional_param|
+        length = optional_param.value.length
         buffer = []
         buffer += [tag >> 8, tag & 0xff]
         buffer += [length >> 8, length & 0xff]
-        output << buffer.pack('cccc') << tlv[:value]
+        output << buffer.pack('cccc') << optional_param.value
       end
       output
     end
@@ -168,10 +168,8 @@ module Smpp::Pdu
       optionals = {}
       while not remaining_bytes.empty?
         optional = {}
-        tag, optional[:length], remaining_bytes = remaining_bytes.unpack('H4na*')
-        optional[:tag] = tag.hex
-        optional[:value] = remaining_bytes.slice!(0...optional[:length])
-        optionals[tag.hex] = optional
+        optional_parameter, remaining_bytes = Smpp::OptionalParameter.from_wire_data(remaining_bytes)
+        optionals[optional_parameter.tag] = optional_parameter
       end
       
       return optionals
