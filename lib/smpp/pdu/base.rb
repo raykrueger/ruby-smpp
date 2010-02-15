@@ -67,6 +67,8 @@ module Smpp::Pdu
     OPTIONAL_RECEIPTED_MESSAGE_ID = 0x001E
     OPTIONAL_MESSAGE_STATE        = 0x0427
 
+    SEQUENCE_MAX = 0x7FFFFFFF
+
     # PDU sequence number. 
     @@seq = [Time.now.to_i]
 
@@ -130,7 +132,7 @@ module Smpp::Pdu
 
     def Base.next_sequence_number
       @@seq.synchronize do
-        (@@seq[0] += 1) % 512
+        (@@seq[0] += 1) % SEQUENCE_MAX
       end
     end
 

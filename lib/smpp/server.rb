@@ -18,11 +18,6 @@ class Smpp::Server < Smpp::Base
     @received_messages = received_messages
     @sent_messages = sent_messages
     
-    # Array of un-acked MT message IDs indexed by sequence number.
-    # As soon as we receive SubmitSmResponse we will use this to find the 
-    # associated message ID, and then create a pending delivery report.
-    @ack_ids = Array.new(512)         
-    
     ed = @config[:enquire_link_delay_secs] || 5
     comm_inactivity_timeout = [ed - 5, 3].max
   rescue Exception => ex

@@ -22,7 +22,7 @@ class Smpp::Transceiver < Smpp::Base
     # Array of un-acked MT message IDs indexed by sequence number.
     # As soon as we receive SubmitSmResponse we will use this to find the 
     # associated message ID, and then create a pending delivery report.
-    @ack_ids = Array.new(512)         
+    @ack_ids = {}
     
     ed = @config[:enquire_link_delay_secs] || 5
     comm_inactivity_timeout = 2 * ed
@@ -136,7 +136,7 @@ class Smpp::Transceiver < Smpp::Base
         close_connection
       end
     when Pdu::SubmitSmResponse
-      mt_message_id = @ack_ids[pdu.sequence_number]
+      mt_message_id = @ack_ids.delete(pdu.sequence_number)
       if !mt_message_id
         raise "Got SubmitSmResponse for unknown sequence_number: #{pdu.sequence_number}"
       end
