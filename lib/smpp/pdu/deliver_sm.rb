@@ -19,7 +19,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     @destination_addr        = destination_addr
     @esm_class               = options[:esm_class]?options[:esm_class]:0 # default smsc mode
     @protocol_id             = options[:protocol_id]?options[:protocol_id]:0
-    @priority_flag           = options[:priority_flag]?options[:priority_flag]:1
+    @priority_flag           = options[:priority_flag]?options[:priority_flag]:0
     @schedule_delivery_time  = options[:schedule_delivery_time]?options[:schedule_delivery_time]:''
     @validity_period         = options[:validity_period]?options[:validity_period]:''
     @registered_delivery     = options[:registered_delivery]?options[:registered_delivery]:1 # we want delivery notifications

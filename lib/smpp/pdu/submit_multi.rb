@@ -24,7 +24,7 @@ class Smpp::Pdu::SubmitMulti < Smpp::Pdu::Base
     dest_addresses          = build_destination_addresses(destination_addr_array,dest_addr_ton,dest_addr_npi,IS_SMEADDR) 
     esm_class               = options[:esm_class]
     protocol_id             = 0
-    priority_flag           = 1
+    priority_flag           = 0
     schedule_delivery_time  = ''
     validity_period         = ''
     registered_delivery     = 1 # we want delivery notifications
