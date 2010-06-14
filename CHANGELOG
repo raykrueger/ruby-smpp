@@ -1,3 +1,6 @@
+= 0.3.0
+* Added begin/rescue handling in receive_data to keep the connection alive. Delegates can implement data_error(Exception) and re-raise the error if they wish to break the connection.
+
 = 0.1.3
 * Transition maintenance from August to Ray Krueger
 * Changed the expected signature of transceiver delegates to use the full PDU instead of picking off attributes one by one
