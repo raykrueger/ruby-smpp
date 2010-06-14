@@ -88,14 +88,21 @@ module Smpp
           #not complete packet ... break
           break
         end
-        
+
         pkt = @data.slice!(0,cmd_length)
 
-        # parse incoming PDU
-        pdu = read_pdu(pkt)
+        begin
+          # parse incoming PDU
+          pdu = read_pdu(pkt)
 
-        # let subclass process it
-        process_pdu(pdu) if pdu
+          # let subclass process it
+          process_pdu(pdu) if pdu
+        rescue Exception => e
+          logger.error "Error receiving data: #{e}\n#{e.backtrace.join("\n")}"
+          if @delegate.respond_to?(:data_error)
+            @delegate.data_error(e)
+          end
+        end
 
       end
     end
