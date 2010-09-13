@@ -12,16 +12,10 @@
 
 class Smpp::Receiver < Smpp::Base
 
-  def initialize(config, delegate, pdr_storage={})
+  def initialize(config, delegate)
     super(config)
     @delegate = delegate
-    @pdr_storage = pdr_storage
     
-    # Array of un-acked MT message IDs indexed by sequence number.
-    # As soon as we receive SubmitSmResponse we will use this to find the 
-    # associated message ID, and then create a pending delivery report.
-    @ack_ids = {}
-
     ed = @config[:enquire_link_delay_secs] || 5
     comm_inactivity_timeout = 2 * ed
   rescue Exception => ex

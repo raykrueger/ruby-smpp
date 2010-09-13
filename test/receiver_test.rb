@@ -131,7 +131,7 @@ class ReceiverTest < Test::Unit::TestCase
   private
 
   def build_receiver(delegate = nil)
-    receiver = Smpp::Receiver.new(1, {}, delegate, {})
+    receiver = Smpp::Receiver.new(1, {}, delegate)
     class << receiver
       attr_reader :sent_data, :close_connections
       def send_data(data)
