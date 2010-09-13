@@ -66,40 +66,6 @@ class Smpp::Receiver < Smpp::Base
         logger.warn "Unexpected BindReceiverResponse. Command status: #{pdu.command_status}"
         close_connection
       end
-    when Pdu::SubmitSmResponse
-      mt_message_id = @ack_ids.delete(pdu.sequence_number)
-      if !mt_message_id
-        raise "Got SubmitSmResponse for unknown sequence_number: #{pdu.sequence_number}"
-      end
-      if pdu.command_status != Pdu::Base::ESME_ROK
-        logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
-        if @delegate.respond_to?(:message_rejected)
-          @delegate.message_rejected(self, mt_message_id, pdu)
-        end
-      else
-        logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
-        if @delegate.respond_to?(:message_accepted)
-          @delegate.message_accepted(self, mt_message_id, pdu)
-        end        
-      end
-      # Now we got the SMSC message id; create pending delivery report.
-      @pdr_storage[pdu.message_id] = mt_message_id            
-    when Pdu::SubmitMultiResponse
-      mt_message_id = @ack_ids[pdu.sequence_number]
-      if !mt_message_id
-        raise "Got SubmitMultiResponse for unknown sequence_number: #{pdu.sequence_number}"
-      end
-      if pdu.command_status != Pdu::Base::ESME_ROK
-        logger.error "Error status in SubmitMultiResponse: #{pdu.command_status}"
-        if @delegate.respond_to?(:message_rejected)
-          @delegate.message_rejected(self, mt_message_id, pdu)
-        end
-      else
-        logger.info "Got OK SubmitMultiResponse (#{pdu.message_id} -> #{mt_message_id})"
-        if @delegate.respond_to?(:message_accepted)
-          @delegate.message_accepted(self, mt_message_id, pdu)
-        end
-      end
     else
       super
     end 
