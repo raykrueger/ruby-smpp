@@ -27,7 +27,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     @data_coding             = options[:data_coding]?options[:data_coding]:3 # iso-8859-1
     @sm_default_msg_id       = options[:sm_default_msg_id]?options[:sm_default_msg_id]:0
     @short_message           = short_message
-    payload                  = @udh ? @udh + @short_message : @short_message 
+    payload                  = @udh ? @udh.to_s + @short_message : @short_message 
     @sm_length               = payload.length
 
     #fields set for delivery report
@@ -44,6 +44,14 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     seq ||= next_sequence_number
 
     super(DELIVER_SM, 0, seq, pdu_body)
+  end
+
+  def total_parts
+    @udh[4]
+  end
+
+  def part
+    @udh[5]
   end
 
   def self.from_wire_data(seq, status, body)
@@ -85,7 +93,10 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
       end
     end
 
-
+    # Check to see if body has a 5 bit header
+    if short_message.unpack("c")[0] == 5
+      options[:udh] = short_message.slice!(0..5).unpack("CCCCCC")
+    end
 
     #Note: if the SM is a delivery receipt (esm_class=4) then the short_message _may_ be in this format:  
     # "id:Smsc2013 sub:1 dlvrd:1 submit date:0610171515 done date:0610171515 stat:0 err:0 text:blah"
