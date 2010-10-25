@@ -47,15 +47,15 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
   end
 
   def total_parts
-    @udh[4]
+    @udh ? @udh[4] : 0
   end
 
   def part
-    @udh[5]
+    @udh ? @udh[5] : 0
   end
 
   def message_id
-    @udh[3]
+    @udh ? @udh[3] : 0
   end
 
   def self.from_wire_data(seq, status, body)
