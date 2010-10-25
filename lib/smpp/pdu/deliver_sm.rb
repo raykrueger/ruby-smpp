@@ -54,6 +54,10 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     @udh[5]
   end
 
+  def message_id
+    @udh[3]
+  end
+
   def self.from_wire_data(seq, status, body)
     options = {}
     # brutally unpack it

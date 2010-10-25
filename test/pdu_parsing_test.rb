@@ -46,6 +46,7 @@ class PduParsingTest < Test::Unit::TestCase
 
     assert_equal 2, pdu.total_parts, "Have total parts of the message"
     assert_equal 1, pdu.part, "Correctly show the part"
+    assert_equal 180, pdu.message_id
 
     assert_equal "This is a long message to test whether or not we get the header info via the SMSC that we would require to be able to recompose long messages in hashblue", pdu.short_message
   end
@@ -69,6 +70,7 @@ class PduParsingTest < Test::Unit::TestCase
 
     assert_equal 2, pdu.total_parts, "Have total parts of the message"
     assert_equal 2, pdu.part, "Correctly show the part"
+    assert_equal 180, pdu.message_id
 
     assert_equal " and provide a good user experience", pdu.short_message
   end
