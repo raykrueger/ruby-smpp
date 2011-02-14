@@ -39,6 +39,8 @@ module Smpp::Pdu
     ESME_RINVNUMMSGS      = 0x00000055 # Invalid number of messages 
     ESME_RTHROTTLED       = 0x00000058 # Throttling error (ESME has exceeded allowed message limits)     
 
+    ESME_RX_T_APPN        = 0x00000064 # ESME Receiver Temporary App Error Code
+
     # PDU types
     GENERIC_NACK          = 0X80000000 
     BIND_RECEIVER         = 0X00000001 

@@ -20,6 +20,12 @@ class ReceiverTest < Test::Unit::TestCase
     end
   end
 
+  class ExceptionRaisingDelegate < RecordingDelegate
+    def mo_received(receiver, pdu)
+      raise "exception in delegate"
+    end
+  end
+
   def test_receiving_bind_receiver_response_with_ok_status_should_become_bound
     receiver = build_receiver
     bind_receiver_response = Smpp::Pdu::BindReceiverResponse.new(nil, Smpp::Pdu::Base::ESME_ROK, 1)
@@ -76,7 +82,36 @@ class ReceiverTest < Test::Unit::TestCase
   end
 
   def test_receiving_deliver_sm_should_send_deliver_sm_response
-    receiver = build_receiver
+    delegate = RecordingDelegate.new
+    receiver = build_receiver(delegate)
+    deliver_sm = Smpp::Pdu::DeliverSm.new("from", "to", "message")
+
+    receiver.process_pdu(deliver_sm)
+
+    first_sent_data = receiver.sent_data.first
+    assert_not_nil first_sent_data
+    actual_response = Smpp::Pdu::Base.create(first_sent_data)
+    expected_response = Smpp::Pdu::DeliverSmResponse.new(deliver_sm.sequence_number)
+    assert_equal expected_response.to_human, actual_response.to_human
+  end
+
+  def test_receiving_deliver_sm_should_send_error_response_if_delegate_raises_exception
+    delegate = ExceptionRaisingDelegate.new
+    receiver = build_receiver(delegate)
+    deliver_sm = Smpp::Pdu::DeliverSm.new("from", "to", "message")
+
+    receiver.process_pdu(deliver_sm)
+
+    first_sent_data = receiver.sent_data.first
+    assert_not_nil first_sent_data
+    actual_response = Smpp::Pdu::Base.create(first_sent_data)
+    expected_response = Smpp::Pdu::DeliverSmResponse.new(deliver_sm.sequence_number, Smpp::Pdu::Base::ESME_RX_T_APPN)
+    assert_equal expected_response.to_human, actual_response.to_human
+  end
+
+  def test_receiving_deliver_sm_should_still_send_deliver_sm_response_when_no_delegate_is_provided
+    delegate = nil
+    receiver = build_receiver(delegate)
     deliver_sm = Smpp::Pdu::DeliverSm.new("from", "to", "message")
 
     receiver.process_pdu(deliver_sm)
