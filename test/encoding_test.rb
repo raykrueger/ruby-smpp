@@ -17,9 +17,132 @@ class EncodingTest < Test::Unit::TestCase
     pdu = create_pdu(raw_data)
     assert_equal Smpp::Pdu::DeliverSm, pdu.class
     assert_equal 0, pdu.data_coding
-    
+
     expected = "Please deposit \302\2435 into my account, Jos\303\251"
     assert_equal expected, pdu.short_message
+  end
+
+  def test_should_unescape_gsm_escaped_euro_symbol
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0000 1950 6c65 6173 6520
+    6465 706f 7369 7420 8d65 3520 7468 616e
+    6b73
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    expected = "Please deposit \342\202\2545 thanks"
+    assert_equal expected, pdu.short_message
+  end
+
+  def test_should_unescape_gsm_escaped_left_curly_bracket_symbol
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0000 028d 28
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    assert_equal "{", pdu.short_message
+  end
+
+  def test_should_unescape_gsm_escaped_right_curly_bracket_symbol
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0000 028d 29
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    assert_equal "}", pdu.short_message
+  end
+
+  def test_should_unescape_gsm_escaped_tilde_symbol
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0000 028d 7e
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    assert_equal "~", pdu.short_message
+  end
+
+  def test_should_unescape_gsm_escaped_left_square_bracket_symbol
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0000 028d 5b
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    assert_equal "[", pdu.short_message
+  end
+
+  def test_should_unescape_gsm_escaped_right_square_bracket_symbol
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0000 028d 5d
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    assert_equal "]", pdu.short_message
+  end
+
+  def test_should_unescape_gsm_escaped_backslash_symbol
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0000 028d 5c
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    assert_equal "\\", pdu.short_message
+  end
+
+  def test_should_unescape_gsm_escaped_vertical_bar_symbol
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0000 028d 7c
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    assert_equal "|", pdu.short_message
   end
 
   protected

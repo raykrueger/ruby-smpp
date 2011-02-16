@@ -60,6 +60,18 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     @udh ? @udh[3] : 0
   end
 
+  EURO_TOKEN = "_X_EURO_X_"
+  GSM_ESCAPED_CHARACTERS = {
+    ?(  => "\173",
+    ?)  => "\175",
+    ?|  => "\174",
+    ?[  => "\133",
+    ?]  => "\135",
+    ?~  => "\176",
+    ?\\ => "\134",
+    ?e  =>  EURO_TOKEN
+  }
+
   def self.from_wire_data(seq, status, body)
     options = {}
     # brutally unpack it
@@ -127,7 +139,9 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
       Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
     end    
 
+    short_message.gsub!(/\215./) { |match| GSM_ESCAPED_CHARACTERS[match[1]] }
     short_message = Iconv.conv("UTF-8", "HP-ROMAN8", short_message)
+    short_message.gsub!(EURO_TOKEN, "\342\202\254")
 
     new(source_addr, destination_addr, short_message, options, seq) 
   end
