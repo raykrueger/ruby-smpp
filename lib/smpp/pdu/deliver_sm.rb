@@ -69,7 +69,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     ?>  => "\135", # ]
     ?=  => "\176", # ~
     ?/  => "\134", # \
-    20  => "\252", # ^
+    134 => "\252", # ^
     ?e  =>  EURO_TOKEN
   }
 

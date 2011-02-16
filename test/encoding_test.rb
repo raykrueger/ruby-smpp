@@ -150,7 +150,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 003d 0000 0005 0000 0000 0000 0002
     0001 0134 3437 3830 3330 3239 3833 3700
     0101 3434 3738 3033 3032 3938 3337 0000
-    0000 0000 0000 0000 028d 14
+    0000 0000 0000 0000 028d 86
     EOF
 
     pdu = create_pdu(raw_data)
@@ -158,6 +158,26 @@ class EncodingTest < Test::Unit::TestCase
     assert_equal 0, pdu.data_coding
 
     expected = "\313\206"
+    assert_equal expected, pdu.short_message
+  end
+
+  def test_should_unescape_gsm_escaped_characters_together
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0000 4054 6573 748d b869
+    6e67 208d 8620 7374 6167 2f69 6e67 208d
+    3d20 6575 726f 208d 6520 616e 6420 8d28
+    6f74 688d 2f65 7220 8d3c 2063 6861 7261
+    8d3e 6374 6572 738d 29
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    expected = "Test|ing ˆ stag/ing ~ euro € and {oth\\er [ chara]cters}"
     assert_equal expected, pdu.short_message
   end
 
