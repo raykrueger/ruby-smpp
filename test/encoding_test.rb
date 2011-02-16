@@ -145,6 +145,23 @@ class EncodingTest < Test::Unit::TestCase
     assert_equal "|", pdu.short_message
   end
 
+  def test_should_convert_ucs_2_into_utf_8_where_data_coding_indicates_its_presence
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0800 0E00 db00 f100 ef00
+    e700 f800 6401 13
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 8, pdu.data_coding
+
+    expected = "\303\233\303\261\303\257\303\247\303\270d\304\223" # Ûñïçødē
+    assert_equal expected, pdu.short_message
+  end
+
   protected
   def create_pdu(raw_data)
     hex_data = [raw_data.chomp.gsub(" ","").gsub(/\n/,"")].pack("H*")
