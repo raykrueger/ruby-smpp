@@ -75,7 +75,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 003d 0000 0005 0000 0000 0000 0002
     0001 0134 3437 3830 3330 3239 3833 3700
     0101 3434 3738 3033 3032 3938 3337 0000
-    0000 0000 0000 0000 028d 7e
+    0000 0000 0000 0000 028d 3d
     EOF
 
     pdu = create_pdu(raw_data)
@@ -90,7 +90,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 003d 0000 0005 0000 0000 0000 0002
     0001 0134 3437 3830 3330 3239 3833 3700
     0101 3434 3738 3033 3032 3938 3337 0000
-    0000 0000 0000 0000 028d 5b
+    0000 0000 0000 0000 028d 3c
     EOF
 
     pdu = create_pdu(raw_data)
@@ -105,7 +105,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 003d 0000 0005 0000 0000 0000 0002
     0001 0134 3437 3830 3330 3239 3833 3700
     0101 3434 3738 3033 3032 3938 3337 0000
-    0000 0000 0000 0000 028d 5d
+    0000 0000 0000 0000 028d 3e
     EOF
 
     pdu = create_pdu(raw_data)
@@ -120,7 +120,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 003d 0000 0005 0000 0000 0000 0002
     0001 0134 3437 3830 3330 3239 3833 3700
     0101 3434 3738 3033 3032 3938 3337 0000
-    0000 0000 0000 0000 028d 5c
+    0000 0000 0000 0000 028d 2f
     EOF
 
     pdu = create_pdu(raw_data)
@@ -135,7 +135,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 003d 0000 0005 0000 0000 0000 0002
     0001 0134 3437 3830 3330 3239 3833 3700
     0101 3434 3738 3033 3032 3938 3337 0000
-    0000 0000 0000 0000 028d 7c
+    0000 0000 0000 0000 028d b8
     EOF
 
     pdu = create_pdu(raw_data)
@@ -143,6 +143,22 @@ class EncodingTest < Test::Unit::TestCase
     assert_equal 0, pdu.data_coding
 
     assert_equal "|", pdu.short_message
+  end
+
+  def test_should_unescape_gsm_escaped_caret_or_circumflex_symbol
+    raw_data = <<-EOF
+    0000 003d 0000 0005 0000 0000 0000 0002
+    0001 0134 3437 3830 3330 3239 3833 3700
+    0101 3434 3738 3033 3032 3938 3337 0000
+    0000 0000 0000 0000 028d 14
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    expected = "\313\206"
+    assert_equal expected, pdu.short_message
   end
 
   def test_should_convert_ucs_2_into_utf_8_where_data_coding_indicates_its_presence
