@@ -1,3 +1,5 @@
+require 'iconv'
+
 # Received for MO message or delivery notification
 class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base 
   handles_cmd DELIVER_SM
@@ -124,7 +126,9 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     else
       Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
     end    
-    
+
+    short_message = Iconv.conv("UTF-8", "HP-ROMAN8", short_message)
+
     new(source_addr, destination_addr, short_message, options, seq) 
   end
 end
