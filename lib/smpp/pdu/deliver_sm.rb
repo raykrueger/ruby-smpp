@@ -61,6 +61,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
   end
 
   EURO_TOKEN = "_X_EURO_X_"
+
   GSM_ESCAPED_CHARACTERS = {
     ?(  => "\173", # {
     ?)  => "\175", # }
@@ -140,7 +141,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
       Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
     end    
 
-    if options[:data_coding] == 0
+    if options[:data_coding] < 2
       short_message.gsub!(/\215./) { |match| GSM_ESCAPED_CHARACTERS[match[1]] }
       short_message = Iconv.conv("UTF-8", "HP-ROMAN8", short_message)
       short_message.gsub!(EURO_TOKEN, "\342\202\254")
