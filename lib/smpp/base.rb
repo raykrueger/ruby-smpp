@@ -152,12 +152,17 @@ module Smpp
         # we don't take this lightly: close the connection
         close_connection
       when Pdu::DeliverSm
-        write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number))
         logger.debug "ESM CLASS #{pdu.esm_class}"
         if pdu.esm_class != 4
           # MO message
-          if @delegate.respond_to?(:mo_received)
-            @delegate.mo_received(self, pdu)
+          begin
+            if @delegate.respond_to?(:mo_received)
+              @delegate.mo_received(self, pdu)
+            end
+            write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number))
+          rescue => e
+            logger.warn "Send Receiver Temporary App Error due to #{e.inspect} raised in delegate"
+            write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number, Pdu::Base::ESME_RX_T_APPN))
           end
         else
           # Delivery report
