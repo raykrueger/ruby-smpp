@@ -11,6 +11,7 @@ $:.unshift(File.dirname(__FILE__))
 require 'smpp/base.rb'
 require 'smpp/transceiver.rb'
 require 'smpp/receiver.rb'
+require 'smpp/transmitter.rb'
 require 'smpp/optional_parameter'
 require 'smpp/pdu/base.rb'
 require 'smpp/pdu/bind_base.rb'
