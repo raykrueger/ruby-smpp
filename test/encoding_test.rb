@@ -211,6 +211,19 @@ class EncodingTest < Test::Unit::TestCase
     assert_equal "£Pounds£ ", pdu.short_message
   end
 
+  def test_should_decode_pound_sign_from_hp_roman_8_to_utf_8_when_data_coding_set_to_17
+    raw_data = <<-EOF
+    0000 0096 0000 0005 0000 0000 0000 1b10
+    0005 004d 6f6e 6579 416c 6572 7400 0101
+    3434 3737 3738 3030 3036 3133 0000 0000
+    0000 0000 1100 5fbb 506f 756e 6473 bb20
+    EOF
+
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal "£Pounds£ ", pdu.short_message
+  end
+
   protected
   def create_pdu(raw_data)
     hex_data = [raw_data.chomp.gsub(" ","").gsub(/\n/,"")].pack("H*")
