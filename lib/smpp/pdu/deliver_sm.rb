@@ -146,7 +146,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
       short_message.gsub!(/\215./) { |match| GSM_ESCAPED_CHARACTERS[match[1]] }
       short_message = Iconv.conv("UTF-8", "HP-ROMAN8", short_message)
       short_message.gsub!(EURO_TOKEN, "\342\202\254")
-    elsif options[:data_coding] == 8
+    elsif options[:data_coding] & 0b0100 == 0
       short_message = Iconv.conv("UTF-8", "UTF-16BE", short_message)
     end
 
