@@ -36,7 +36,7 @@ class Smpp::Transceiver < Smpp::Base
       # Split the message into parts of 153 characters. (160 - 7 characters for UDH)
       parts = []
       while message.size > 0 do
-        parts << message.slice!(0..self.get_message_part_size(options))
+        parts << message.slice!(0..Smpp::Transceiver.get_message_part_size(options))
       end
       
       0.upto(parts.size-1) do |i|
