@@ -36,7 +36,7 @@ class Smpp::Transceiver < Smpp::Base
       # Split the message into parts of 153 characters. (160 - 7 characters for UDH)
       parts = []
       while message.size > 0 do
-        parts << message.slice!(0..152)
+        parts << message.slice!(0..self.get_message_part_size(options))
       end
       
       0.upto(parts.size-1) do |i|
@@ -92,5 +92,18 @@ class Smpp::Transceiver < Smpp::Base
         @config[:source_npi], 
         @config[:source_address_range])
     write_pdu(pdu)
+  end
+
+  # Use data_coding to find out what message part size we can use
+  # http://en.wikipedia.org/wiki/SMS#Message_size
+  def self.get_message_part_size options
+    return 153 if options[:data_coding].nil?
+    return 153 if options[:data_coding] == 0
+    return 134 if options[:data_coding] == 3
+    return 134 if options[:data_coding] == 5
+    return 134 if options[:data_coding] == 6
+    return 134 if options[:data_coding] == 7
+    return 67  if options[:data_coding] == 8
+    return 153
   end
 end
