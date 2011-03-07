@@ -49,11 +49,9 @@ class Smpp::Transceiver < Smpp::Base
         udh << sprintf("%c", parts.size)  # How many parts this message consists of
         udh << sprintf("%c", i+1)         # This is part i+1
         
-        options = {
-          :esm_class => 64,               # This message contains a UDH header.
-          :udh => udh 
-        }
-        
+        options[:esm_class] = 64 # This message contains a UDH header.
+        options[:udh] = udh
+
         pdu = Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], options)
         write_pdu pdu
         
