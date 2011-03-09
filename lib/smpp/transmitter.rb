@@ -53,7 +53,7 @@ class Smpp::Transmitter < Smpp::Base
   def send_mt(message_id, source_addr, destination_addr, short_message, options={})
     logger.debug "Sending MT: #{short_message}"
     if @state == :bound
-      pdu = Pdu::SubmitSm.new(source_addr, destination_addr, short_message, options, message_id)
+      pdu = Pdu::SubmitSm.new(source_addr, destination_addr, short_message, options)
       write_pdu pdu
     else
       raise InvalidStateException, "Transmitter is unbound. Cannot send MT messages."

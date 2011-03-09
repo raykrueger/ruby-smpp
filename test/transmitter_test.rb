@@ -110,7 +110,7 @@ class TransmitterTest < Test::Unit::TestCase
     first_sent_data = transmitter.sent_data.first
     assert_not_nil first_sent_data
     actual_pdu = Smpp::Pdu::Base.create(first_sent_data)
-    expected_pdu = Smpp::Pdu::SubmitSm.new("07700900123", "07700900456", "Well, do ya, punk?", {}, 1)
+    expected_pdu = Smpp::Pdu::SubmitSm.new("07700900123", "07700900456", "Well, do ya, punk?", {}, actual_pdu.sequence_number)
     assert_equal expected_pdu.to_human, actual_pdu.to_human
   end
 
