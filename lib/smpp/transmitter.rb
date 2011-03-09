@@ -18,24 +18,11 @@ class Smpp::Transmitter < Smpp::Base
   def process_pdu(pdu)
     case pdu
     when Pdu::SubmitSmResponse
-      logger.debug "Recieved SubmitSmResponse success?=#{pdu.command_status == Pdu::Base::ESME_ROK}"
-      #mt_message_id = @ack_ids.delete(pdu.sequence_number)
-      # if !mt_message_id
-      #   raise "Got SubmitSmResponse for unknown sequence_number: #{pdu.sequence_number}"
-      # end
-      # if pdu.command_status != Pdu::Base::ESME_ROK
-      #   logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
-      #   if @delegate.respond_to?(:message_rejected)
-      #     @delegate.message_rejected(self, mt_message_id, pdu)
-      #   end
-      # else
-      #   logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
-      #   if @delegate.respond_to?(:message_accepted)
-      #     @delegate.message_accepted(self, mt_message_id, pdu)
-      #   end        
-      # end
-      # # Now we got the SMSC message id; create pending delivery report.
-      # @pdr_storage[pdu.message_id] = mt_message_id
+      if pdu.command_status == Pdu::Base::ESME_ROK
+        logger.debug "Received SubmitSmResponse successfully"
+      else
+        logger.debug "Received SubmitSmResponse failed: #{pdu.command_status}"
+      end
     when Pdu::BindTransmitterResponse
       case pdu.command_status
       when Pdu::Base::ESME_ROK
@@ -46,7 +33,7 @@ class Smpp::Transmitter < Smpp::Base
         end
       when Pdu::Base::ESME_RINVPASWD
         logger.warn "Invalid password."
-        # scheduele the connection to close, which eventually will cause the unbound() delegate
+        # schedule the connection to close, which eventually will cause the unbound() delegate
         # method to be invoked.
         close_connection
       when Pdu::Base::ESME_RINVSYSID
@@ -66,12 +53,8 @@ class Smpp::Transmitter < Smpp::Base
   def send_mt(message_id, source_addr, destination_addr, short_message, options={})
     logger.debug "Sending MT: #{short_message}"
     if @state == :bound
-      pdu = Pdu::SubmitSm.new(source_addr, destination_addr, short_message, options)
+      pdu = Pdu::SubmitSm.new(source_addr, destination_addr, short_message, options, message_id)
       write_pdu pdu
-
-      # keep the message ID so we can associate the SMSC message ID with our message
-      # when the response arrives.
-      # @ack_ids[pdu.sequence_number] = message_id
     else
       raise InvalidStateException, "Transmitter is unbound. Cannot send MT messages."
     end
