@@ -81,7 +81,6 @@ class Smpp::Transmitter < Smpp::Base
           }.merge(options)
 
           pdu = Smpp::Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], combined_options)
-          p pdu
           write_pdu pdu
         end
       else
