@@ -30,7 +30,7 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     @data_coding             = options[:data_coding]?options[:data_coding]:3 # iso-8859-1
     @sm_default_msg_id       = options[:sm_default_msg_id]?options[:sm_default_msg_id]:0
     @short_message           = short_message
-    payload                  = @udh ? @udh + @short_message : @short_message 
+    payload                  = @udh ? @udh.to_s + @short_message : @short_message
     @sm_length               = payload.length
     
     @optional_parameters     = options[:optional_parameters]
@@ -79,6 +79,11 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     remaining_bytes = body.unpack('Z*CCZ*CCZ*CCCZ*Z*CCCCCa*')
 
     short_message = remaining_bytes.slice!(0...options[:sm_length])
+
+    # Check to see if body has a 5 bit header
+    if short_message.unpack("c")[0] == 5
+      options[:udh] = short_message.slice!(0..5).unpack("CCCCCC")
+    end
 
     #everything left in remaining_bytes is 3.4 optional parameters
     options[:optional_parameters] = optional_parameters(remaining_bytes)

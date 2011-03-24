@@ -106,7 +106,7 @@ class TransmitterTest < Test::Unit::TestCase
     transmitter.process_pdu(bind_transmitter_response)
 
     transmitter.send_mt(1, "07700900123", "07700900456", "Well, do ya, punk?")
-    
+
     first_sent_data = transmitter.sent_data.first
     assert_not_nil first_sent_data
     actual_pdu = Smpp::Pdu::Base.create(first_sent_data)
@@ -114,7 +114,32 @@ class TransmitterTest < Test::Unit::TestCase
     assert_equal expected_pdu.to_human, actual_pdu.to_human
   end
 
+  def test_send_two_submit_sm_pdus_when_we_attempt_to_send_a_message_over_160_chars
+    transmitter = build_transmitter
+    bind_transmitter_response = Smpp::Pdu::BindTransmitterResponse.new(nil, Smpp::Pdu::Base::ESME_ROK, 1)
+    transmitter.process_pdu(bind_transmitter_response)
+
+    message_id = 123
+
+    transmitter.send_concat_mt(message_id, "07700900123", "07700900456", "I decided to return those really expensive products to the company i bought them from. They refunded me the money completely and I am going to have a think about what i want to do next. Maybe tomorrow go shopping.")
+
+    assert_equal 2, transmitter.sent_data.size
+
+    first_pdu = Smpp::Pdu::Base.create(transmitter.sent_data[0])
+    assert_equal udh_header(message_id, 1, 2), first_pdu.udh
+    assert_equal "I decided to return those really expensive products to the company i bought them from. They refunded me the money completely and I am ", first_pdu.short_message
+
+    second_pdu = Smpp::Pdu::Base.create(transmitter.sent_data[1])
+    assert_equal udh_header(message_id, 2, 2), second_pdu.udh
+    assert_equal "going to have a think about what i want to do next. Maybe tomorrow go shopping.", second_pdu.short_message
+
+  end
+
   private
+
+  def udh_header(message_id, part, total_parts)
+    [5, 0, 3, message_id, total_parts, part]
+  end
 
   def build_transmitter(delegate = nil)
     transmitter = Smpp::Transmitter.new(1, {}, delegate)
