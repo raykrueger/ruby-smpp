@@ -166,6 +166,7 @@ module Smpp
         hex_debug data, "-> "
       rescue Exception => ex
         logger.error "Exception while reading PDUs: #{ex} in #{ex.backtrace[0]}"
+        hex_debug data, "-> "
         raise
       end
       pdu
