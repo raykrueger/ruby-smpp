@@ -9,6 +9,9 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
               :sm_default_msg_id, :sm_length, :stat, :msg_reference, :udh, :short_message,
               :message_state, :receipted_message_id, :optional_parameters
 
+  UDL_SHORT = 5
+  UDL_LONG  = 6
+
   def initialize(source_addr, destination_addr, short_message, options={}, seq=nil) 
     
     @udh = options[:udh]      
@@ -49,15 +52,25 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
   end
 
   def total_parts
-    @udh ? @udh[4] : 0
+    return 0 unless @udh
+    @udh[-2]
   end
 
   def part
-    @udh ? @udh[5] : 0
+    return 0 unless @udh
+    @udh[-1]
   end
 
   def message_id
-    @udh ? @udh[3] : 0
+    return 0 unless @udh
+    case @udh.length - 1
+    when UDL_SHORT
+      @udh[3]
+    when UDL_LONG
+      @udh[3] * 0x100 + @udh[4]
+    else
+      0
+    end
   end
 
   EURO_TOKEN = "_X_EURO_X_"
@@ -113,9 +126,9 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
       end
     end
 
-    # Check to see if body has a 5 bit header
-    if short_message.unpack("c")[0] == 5
-      options[:udh] = short_message.slice!(0..5).unpack("CCCCCC")
+    udl = short_message.unpack("c")[0]
+    if (UDL_SHORT..UDL_LONG).include?(udl)
+      options[:udh] = short_message.slice!(0..udl).unpack("C" * (udl + 1))
     end
 
     #Note: if the SM is a delivery receipt (esm_class=4) then the short_message _may_ be in this format:  

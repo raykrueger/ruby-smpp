@@ -75,6 +75,68 @@ class PduParsingTest < Test::Unit::TestCase
     assert_equal " and provide a good user experience", pdu.short_message
   end
 
+  def test_recieve_part_one_of_multi_part_message_with_16_bit_message_id
+    part_one_message = <<-EOF
+    0000 00d8 0000 0005 0000 0000 0000 07f2
+    0001 0134 3437 3730 3039 3030 3030 3100
+    0101 3434 3737 3030 3930 3030 3032 0000
+    0000 0000 0000 0000 9f06 0804 0110 0301
+    3132 3334 3536 3738 3920 3132 3334 3536
+    3738 3920 3132 3334 3536 3738 3920 3132
+    3334 3536 3738 3920 3132 3334 3536 3738
+    3920 3132 3334 3536 3738 3920 3132 3334
+    3536 3738 3920 3132 3334 3536 3738 3920
+    3132 3334 3536 3738 3920 3132 3334 3536
+    3738 3920 3132 3334 3536 3738 3920 3132
+    3334 3536 3738 3920 3132 3334 3536 3738
+    3920 3132 3334 3536 3738 3920 3132 3334
+    3536 3738 3920 3132
+    EOF
+
+    pdu = create_pdu(part_one_message)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal "447700900001", pdu.source_addr
+    assert_equal "447700900002", pdu.destination_addr
+    assert_equal [6, 8, 4, 1, 16, 3, 1], pdu.udh
+
+    assert_equal 3, pdu.total_parts, "Have total parts of the message"
+    assert_equal 1, pdu.part, "Correctly show the part"
+    assert_equal 1 * 256 + 16, pdu.message_id
+
+    assert_equal "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12", pdu.short_message
+  end
+
+  def test_recieve_part_two_of_multi_part_message_with_16_bit_message_id
+    part_two_message = <<-EOF
+    0000 00d8 0000 0005 0000 0000 0000 07f3
+    0001 0134 3437 3730 3039 3030 3030 3100
+    0101 3434 3737 3030 3930 3030 3032 0000
+    0000 0000 0000 0000 9f06 0804 0110 0302
+    3132 3334 3536 3738 3920 3132 3334 3536
+    3738 3920 3132 3334 3536 3738 3920 3132
+    3334 3536 3738 3920 3132 3334 3536 3738
+    3920 3132 3334 3536 3738 3920 3132 3334
+    3536 3738 3920 3132 3334 3536 3738 3920
+    3132 3334 3536 3738 3920 3132 3334 3536
+    3738 3920 3132 3334 3536 3738 3920 3132
+    3334 3536 3738 3920 3132 3334 3536 3738
+    3920 3132 3334 3536 3738 3920 3132 3334
+    3536 3738 3920 3132
+    EOF
+
+    pdu = create_pdu(part_two_message)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal "447700900001", pdu.source_addr
+    assert_equal "447700900002", pdu.destination_addr
+    assert_equal [6, 8, 4, 1, 16, 3, 2], pdu.udh
+
+    assert_equal 3, pdu.total_parts, "Have total parts of the message"
+    assert_equal 2, pdu.part, "Correctly show the part"
+    assert_equal 1 * 256 + 16, pdu.message_id
+
+    assert_equal "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12", pdu.short_message
+  end
+
   protected
   def create_pdu(raw_data)
     hex_data = [raw_data.chomp.gsub(" ","").gsub(/\n/,"")].pack("H*")
