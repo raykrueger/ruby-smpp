@@ -52,7 +52,7 @@ class PduParsingTest < Test::Unit::TestCase
   end
 
   def test_recieve_part_two_of_multi_part_message
-    part_one_message = <<-EOF
+    part_two_message = <<-EOF
     0000 0062 0000 0005 0000 0000 0000 0002
     0001 0134 3437 3937 3334 3238 3634 3400
     0101 3434 3739 3736 3232 3430 3137 0000
@@ -62,7 +62,7 @@ class PduParsingTest < Test::Unit::TestCase
     6365
     EOF
 
-    pdu = create_pdu(part_one_message)
+    pdu = create_pdu(part_two_message)
     assert_equal Smpp::Pdu::DeliverSm, pdu.class
     assert_equal "447973428644", pdu.source_addr
     assert_equal "447976224017", pdu.destination_addr
