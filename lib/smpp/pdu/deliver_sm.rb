@@ -139,15 +139,6 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
       Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}, msg_reference=#{options[:msg_reference]}, stat=#{options[:stat]}"
     else
       Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
-    end    
-
-    # The 2nd and 3rd bits of data_coding indicate encoding. If not set, use the default encoding
-    if options[:data_coding] & 0b1100 == 0
-      short_message.gsub!(/\215./) { |match| GSM_ESCAPED_CHARACTERS[match[1]] }
-      short_message = Iconv.conv("UTF-8", "HP-ROMAN8", short_message)
-      short_message.gsub!(EURO_TOKEN, "\342\202\254")
-    elsif options[:data_coding] & 0b0100 == 0
-      short_message = Iconv.conv("UTF-8", "UTF-16BE", short_message)
     end
 
     new(source_addr, destination_addr, short_message, options, seq) 
