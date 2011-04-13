@@ -44,9 +44,9 @@ class PduParsingTest < Test::Unit::TestCase
     assert_equal "447976224017", pdu.destination_addr
     assert_equal [5, 0, 3, 180, 2, 1], pdu.udh
 
-    assert_equal 2, pdu.total_parts, "Have total parts of the message"
-    assert_equal 1, pdu.part, "Correctly show the part"
-    assert_equal 180, pdu.message_id
+    assert_equal pdu.udh[3], pdu.message_id
+    assert_equal pdu.udh[4], pdu.total_parts, "Have total parts of the message"
+    assert_equal pdu.udh[5], pdu.part, "Correctly show the part"
 
     assert_equal "This is a long message to test whether or not we get the header info via the SMSC that we would require to be able to recompose long messages in hashblue", pdu.short_message
   end
@@ -68,9 +68,9 @@ class PduParsingTest < Test::Unit::TestCase
     assert_equal "447976224017", pdu.destination_addr
     assert_equal [5, 0, 3, 180, 2, 2], pdu.udh
 
-    assert_equal 2, pdu.total_parts, "Have total parts of the message"
-    assert_equal 2, pdu.part, "Correctly show the part"
-    assert_equal 180, pdu.message_id
+    assert_equal pdu.udh[3], pdu.message_id
+    assert_equal pdu.udh[4], pdu.total_parts, "Have total parts of the message"
+    assert_equal pdu.udh[5], pdu.part, "Correctly show the part"
 
     assert_equal " and provide a good user experience", pdu.short_message
   end
@@ -99,9 +99,9 @@ class PduParsingTest < Test::Unit::TestCase
     assert_equal "447700900002", pdu.destination_addr
     assert_equal [6, 8, 4, 1, 16, 3, 1], pdu.udh
 
-    assert_equal 3, pdu.total_parts, "Have total parts of the message"
-    assert_equal 1, pdu.part, "Correctly show the part"
-    assert_equal 1 * 256 + 16, pdu.message_id
+    assert_equal pdu.udh[3] * 256 + pdu.udh[4], pdu.message_id
+    assert_equal pdu.udh[5], pdu.total_parts, "Have total parts of the message"
+    assert_equal pdu.udh[6], pdu.part, "Correctly show the part"
 
     assert_equal "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12", pdu.short_message
   end
@@ -130,9 +130,9 @@ class PduParsingTest < Test::Unit::TestCase
     assert_equal "447700900002", pdu.destination_addr
     assert_equal [6, 8, 4, 1, 16, 3, 2], pdu.udh
 
-    assert_equal 3, pdu.total_parts, "Have total parts of the message"
-    assert_equal 2, pdu.part, "Correctly show the part"
-    assert_equal 1 * 256 + 16, pdu.message_id
+    assert_equal pdu.udh[3] * 256 + pdu.udh[4], pdu.message_id
+    assert_equal pdu.udh[5], pdu.total_parts, "Have total parts of the message"
+    assert_equal pdu.udh[6], pdu.part, "Correctly show the part"
 
     assert_equal "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12", pdu.short_message
   end
