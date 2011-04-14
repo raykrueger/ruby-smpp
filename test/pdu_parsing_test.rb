@@ -136,6 +136,23 @@ class PduParsingTest < Test::Unit::TestCase
 
     assert_equal "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 12", pdu.short_message
   end
+  
+  def test_receive_message_in_ucs2_encoding
+    raw_data = <<-EOF
+    0000 0053 0000 0005 0000 0000 0000 3b2c
+    0001 0134 3437 3730 3039 3030 3030 3000
+    0101 3434 3737 3030 3930 3030 3031 0000
+    0000 0000 0000 0800 0c06 4a06 2700 2006
+    4406 4300 20
+    EOF
+
+    pdu = create_pdu(raw_data)
+
+    assert_equal '447700900000',                          pdu.source_addr
+    assert_equal '447700900001',                          pdu.destination_addr
+    assert_equal 0x0c,                                    pdu.sm_length
+    assert_equal ['064a06270020064406430020'].pack('H*'), pdu.short_message
+  end
 
   protected
   def create_pdu(raw_data)

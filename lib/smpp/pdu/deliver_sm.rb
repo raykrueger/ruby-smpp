@@ -11,6 +11,8 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
 
   UDL_SHORT = 5
   UDL_LONG  = 6
+  UDH_5_BIT = [UDL_SHORT, 0, 3]
+  UDH_6_BIT = [UDL_LONG,  8, 4]
 
   def initialize(source_addr, destination_addr, short_message, options={}, seq=nil) 
     
@@ -126,8 +128,9 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
       end
     end
 
-    udl = short_message.unpack("c")[0]
-    if (UDL_SHORT..UDL_LONG).include?(udl)
+    first_three_udh_fields = short_message.unpack("CCC")
+    if first_three_udh_fields == UDH_5_BIT || first_three_udh_fields == UDH_6_BIT
+      udl = first_three_udh_fields.first
       options[:udh] = short_message.slice!(0..udl).unpack("C" * (udl + 1))
     end
 
