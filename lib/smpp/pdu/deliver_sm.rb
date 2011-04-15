@@ -89,20 +89,6 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     end
   end
 
-  EURO_TOKEN = "_X_EURO_X_"
-
-  GSM_ESCAPED_CHARACTERS = {
-    ?(  => "\173", # {
-    ?)  => "\175", # }
-    184 => "\174", # |
-    ?<  => "\133", # [
-    ?>  => "\135", # ]
-    ?=  => "\176", # ~
-    ?/  => "\134", # \
-    134 => "\252", # ^
-    ?e  =>  EURO_TOKEN
-  }
-
   def self.from_wire_data(seq, status, body)
     options = {}
     # brutally unpack it
