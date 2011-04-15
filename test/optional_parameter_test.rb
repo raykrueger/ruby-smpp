@@ -1,6 +1,4 @@
-require 'rubygems'
-require 'test/unit'
-require 'smpp'
+require "test_helper"
 
 class OptionalParameterTest < Test::Unit::TestCase
   include Smpp

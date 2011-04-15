@@ -1,6 +1,5 @@
-require 'rubygems'
-require 'test/unit'
-require 'smpp'
+require "test_helper"
+
 require 'server'
 require 'delegate'
 require 'responsive_delegate'

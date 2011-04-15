@@ -1,6 +1,4 @@
-require 'rubygems'
-require 'test/unit'
-require 'smpp'
+require "test_helper"
 
 class TransmitterTest < Test::Unit::TestCase
 

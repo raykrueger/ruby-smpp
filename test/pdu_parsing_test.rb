@@ -1,6 +1,4 @@
-require 'rubygems'
-require 'test/unit'
-require File.expand_path(File.dirname(__FILE__) + "../../lib/smpp")
+require "test_helper"
 
 class PduParsingTest < Test::Unit::TestCase
 
