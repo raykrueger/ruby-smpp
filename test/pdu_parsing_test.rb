@@ -7,15 +7,15 @@ class PduParsingTest < Test::Unit::TestCase
   def test_recieve_single_message
     raw_data = <<-EOF
     0000 003d 0000 0005 0000 0000 0000 0002
-    0001 0134 3437 3830 3330 3239 3833 3700
-    0101 3434 3738 3033 3032 3938 3337 0000
+    0001 0134 3437 3730 3039 3030 3030 3100
+    0101 3434 3737 3030 3930 3030 3032 0000
     0000 0000 0000 0000 0454 6573 74
     EOF
 
     pdu = create_pdu(raw_data)
     assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal "447803029837", pdu.source_addr
-    assert_equal "447803029837", pdu.destination_addr
+    assert_equal "447700900001", pdu.source_addr
+    assert_equal "447700900002", pdu.destination_addr
     assert_nil pdu.udh
     assert_equal "Test", pdu.short_message
   end
@@ -23,8 +23,8 @@ class PduParsingTest < Test::Unit::TestCase
   def test_recieve_part_one_of_multi_part_message
     part_one_message = <<-EOF
     0000 00d8 0000 0005 0000 0000 0000 0001
-    0001 0134 3437 3937 3334 3238 3634 3400
-    0101 3434 3739 3736 3232 3430 3137 0000
+    0001 0134 3437 3730 3039 3030 3030 3100
+    0101 3434 3737 3030 3930 3030 3032 0000
     0000 0000 0000 0000 9f05 0003 b402 0154
     6869 7320 6973 2061 206c 6f6e 6720 6d65
     7373 6167 6520 746f 2074 6573 7420 7768
@@ -40,8 +40,8 @@ class PduParsingTest < Test::Unit::TestCase
 
     pdu = create_pdu(part_one_message)
     assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal "447973428644", pdu.source_addr
-    assert_equal "447976224017", pdu.destination_addr
+    assert_equal "447700900001", pdu.source_addr
+    assert_equal "447700900002", pdu.destination_addr
     assert_equal [5, 0, 3, 180, 2, 1], pdu.udh
 
     assert_equal pdu.udh[3], pdu.message_id
@@ -54,8 +54,8 @@ class PduParsingTest < Test::Unit::TestCase
   def test_recieve_part_two_of_multi_part_message
     part_two_message = <<-EOF
     0000 0062 0000 0005 0000 0000 0000 0002
-    0001 0134 3437 3937 3334 3238 3634 3400
-    0101 3434 3739 3736 3232 3430 3137 0000
+    0001 0134 3437 3730 3039 3030 3030 3100
+    0101 3434 3737 3030 3930 3030 3032 0000
     0000 0000 0000 0000 2905 0003 b402 0220
     616e 6420 7072 6f76 6964 6520 6120 676f
     6f64 2075 7365 7220 6578 7065 7269 656e
@@ -64,8 +64,8 @@ class PduParsingTest < Test::Unit::TestCase
 
     pdu = create_pdu(part_two_message)
     assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal "447973428644", pdu.source_addr
-    assert_equal "447976224017", pdu.destination_addr
+    assert_equal "447700900001", pdu.source_addr
+    assert_equal "447700900002", pdu.destination_addr
     assert_equal [5, 0, 3, 180, 2, 2], pdu.udh
 
     assert_equal pdu.udh[3], pdu.message_id
