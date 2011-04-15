@@ -16,13 +16,15 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
   UDH_5_OCTET = {
     :udl => 5,
     :iei => CONCATENATED_SMS_8_BIT_REF,
-    :iei_data_length => 3
+    :iei_data_length => 3,
+    :unpack_format => "CCCCCC"
   }
 
   UDH_6_OCTET = {
     :udl => 6,
     :iei => CONCATENATED_SMS_16_BIT_REF,
-    :iei_data_length => 4
+    :iei_data_length => 4,
+    :unpack_format => "CCCnCC"
   }
 
   UDH_5_OCTET_PREFIX = [UDH_5_OCTET[:udl], UDH_5_OCTET[:iei], UDH_5_OCTET[:iei_data_length]]
@@ -67,26 +69,16 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     super(DELIVER_SM, 0, seq, pdu_body)
   end
 
+  def message_id
+    @udh ? @udh[3] : 0
+  end
+
   def total_parts
-    return 0 unless @udh
-    @udh[-2]
+    @udh ? @udh[4] : 0
   end
 
   def part
-    return 0 unless @udh
-    @udh[-1]
-  end
-
-  def message_id
-    return 0 unless @udh
-    case @udh.length - 1
-    when UDH_5_OCTET[:udl]
-      @udh[3]
-    when UDH_6_OCTET[:udl]
-      @udh[3] * 0x100 + @udh[4]
-    else
-      0
-    end
+    @udh ? @udh[5] : 0
   end
 
   def self.from_wire_data(seq, status, body)
@@ -129,9 +121,10 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     end
 
     udh_prefix = short_message.unpack("CCC")
-    if udh_prefix == UDH_5_OCTET_PREFIX || udh_prefix == UDH_6_OCTET_PREFIX
-      udl = udh_prefix.first
-      options[:udh] = short_message.slice!(0..udl).unpack("C" * (udl + 1))
+    if udh_prefix == UDH_5_OCTET_PREFIX
+      options[:udh] = short_message.slice!(0..UDH_5_OCTET[:udl]).unpack(UDH_5_OCTET[:unpack_format])
+    elsif udh_prefix == UDH_6_OCTET_PREFIX
+      options[:udh] = short_message.slice!(0..UDH_6_OCTET[:udl]).unpack(UDH_6_OCTET[:unpack_format])
     end
 
     #Note: if the SM is a delivery receipt (esm_class=4) then the short_message _may_ be in this format:  
