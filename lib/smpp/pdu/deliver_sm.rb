@@ -9,10 +9,24 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
               :sm_default_msg_id, :sm_length, :stat, :msg_reference, :udh, :short_message,
               :message_state, :receipted_message_id, :optional_parameters
 
-  UDL_SHORT = 5
-  UDL_LONG  = 6
-  UDH_5_BIT = [UDL_SHORT, 0, 3]
-  UDH_6_BIT = [UDL_LONG,  8, 4]
+
+  CONCATENATED_SMS_8_BIT_REF = 0
+  CONCATENATED_SMS_16_BIT_REF = 8
+
+  UDH_5_OCTET = {
+    :udl => 5,
+    :iei => CONCATENATED_SMS_8_BIT_REF,
+    :iei_data_length => 3
+  }
+
+  UDH_6_OCTET = {
+    :udl => 6,
+    :iei => CONCATENATED_SMS_16_BIT_REF,
+    :iei_data_length => 4
+  }
+
+  UDH_5_OCTET_PREFIX = [UDH_5_OCTET[:udl], UDH_5_OCTET[:iei], UDH_5_OCTET[:iei_data_length]]
+  UDH_6_OCTET_PREFIX = [UDH_6_OCTET[:udl], UDH_6_OCTET[:iei], UDH_6_OCTET[:iei_data_length]]
 
   def initialize(source_addr, destination_addr, short_message, options={}, seq=nil) 
     
@@ -66,9 +80,9 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
   def message_id
     return 0 unless @udh
     case @udh.length - 1
-    when UDL_SHORT
+    when UDH_5_OCTET[:udl]
       @udh[3]
-    when UDL_LONG
+    when UDH_6_OCTET[:udl]
       @udh[3] * 0x100 + @udh[4]
     else
       0
@@ -128,9 +142,9 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
       end
     end
 
-    first_three_udh_fields = short_message.unpack("CCC")
-    if first_three_udh_fields == UDH_5_BIT || first_three_udh_fields == UDH_6_BIT
-      udl = first_three_udh_fields.first
+    udh_prefix = short_message.unpack("CCC")
+    if udh_prefix == UDH_5_OCTET_PREFIX || udh_prefix == UDH_6_OCTET_PREFIX
+      udl = udh_prefix.first
       options[:udh] = short_message.slice!(0..udl).unpack("C" * (udl + 1))
     end
 
