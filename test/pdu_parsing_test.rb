@@ -75,9 +75,30 @@ class PduParsingTest < Test::Unit::TestCase
     assert_equal " and provide a good user experience", pdu.short_message
   end
 
+  def test_submit_sm_response_clean
+    data = <<-EOF
+    0000 0012 8000 0004 0000 0000 4da8 b9a2
+    3000                                   
+    EOF
+
+    pdu = create_pdu(data)
+    assert_equal Smpp::Pdu::SubmitSmResponse, pdu.class
+  end
+
+  def test_submit_sm_response_clean_with_optional_params
+    data = <<-EOF
+    0000 0012 8000 0004 0000 0000 4da8 b9a2
+    3331 3200 2157 2167
+    EOF
+
+    pdu = create_pdu(data)
+    assert_equal Smpp::Pdu::SubmitSmResponse, pdu.class
+    assert_equal "312", pdu.message_id
+  end
+
   protected
   def create_pdu(raw_data)
-    hex_data = [raw_data.chomp.gsub(" ","").gsub(/\n/,"")].pack("H*")
+    hex_data = [raw_data.chomp.gsub(/\s/,"")].pack("H*")
     Smpp::Pdu::Base.create(hex_data)
   end
 
