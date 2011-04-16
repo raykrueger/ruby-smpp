@@ -11,7 +11,11 @@ class Smpp::Pdu::SubmitSmResponse < Smpp::Pdu::Base
   end
 
   def self.from_wire_data(seq, status, body)
-    message_id = body.chomp("\000")
-    new(seq, status, message_id)
+    message_id, remaining_bytes = body.unpack("Z*a*")
+    if remaining_bytes && !remaining_bytes.empty?
+      op = optional_parameters(remaining_bytes)
+      Smpp::Base.logger.warn "Unparsed SUBMIT_SM_RESP optional parameters: #{op}"
+    end
+    pdu = new(seq, status, message_id)
   end
-end    
+end

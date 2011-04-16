@@ -77,18 +77,22 @@ class PduParsingTest < Test::Unit::TestCase
 
   def test_submit_sm_response_clean
     data = <<-EOF
-    0000 0012 8000 0004 0000 0000 4da8 b9a2
-    3000                                   
+    0000 0028 8000 0004 0000 0000 4da8 ebed
+    3534 3131 342d 3034 3135 562d 3231 3230
+    452d 3039 4831 5100                    
     EOF
 
     pdu = create_pdu(data)
     assert_equal Smpp::Pdu::SubmitSmResponse, pdu.class
+    assert_equal "54114-0415V-2120E-09H1Q", pdu.message_id
   end
 
-  def test_submit_sm_response_clean_with_optional_params
+  def test_submit_sm_response_with_optional_params
     data = <<-EOF
-    0000 0012 8000 0004 0000 0000 4da8 b9a2
-    3331 3200 2157 2167
+    0000 0031 8000 0004 0000 042e 4da8 e9a1
+    0021 5300 0201 7721 6700 1653 6f75 7263
+    6520 6164 6472 6573 7320 6465 6e69 6564
+    2e
     EOF
 
     pdu = create_pdu(data)
