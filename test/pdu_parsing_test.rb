@@ -97,7 +97,7 @@ class PduParsingTest < Test::Unit::TestCase
 
     pdu = create_pdu(data)
     assert_equal Smpp::Pdu::SubmitSmResponse, pdu.class
-    assert_equal "312", pdu.message_id
+    assert_equal "", pdu.message_id
   end
 
   protected
