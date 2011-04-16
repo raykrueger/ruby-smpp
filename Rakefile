@@ -14,8 +14,6 @@ begin
     gem.rubyforge_project = gem.name
 
     gem.extra_rdoc_files = ["README.rdoc", "CHANGELOG", "CONTRIBUTORS.txt"]
-
-    gem.add_dependency "eventmachine", ">= 0.10.0"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
