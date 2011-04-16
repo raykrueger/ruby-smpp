@@ -1,5 +1,8 @@
 source 'http://rubygems.org'
 
-gem "jeweler"
-gem "rake"
 gem "eventmachine"
+
+group :development do
+  gem "jeweler"
+  gem "rake"
+end
