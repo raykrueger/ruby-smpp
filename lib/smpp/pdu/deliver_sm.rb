@@ -1,13 +1,15 @@
-require 'iconv'
 
 # Received for MO message or delivery notification
 class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base 
   handles_cmd DELIVER_SM
+
   attr_reader :service_type, :source_addr_ton, :source_addr_npi, :source_addr, :dest_addr_ton, :dest_addr_npi, 
               :destination_addr, :esm_class, :protocol_id, :priority_flag, :schedule_delivery_time, 
               :validity_period, :registered_delivery, :replace_if_present_flag, :data_coding, 
               :sm_default_msg_id, :sm_length, :stat, :msg_reference, :udh, :short_message,
               :message_state, :receipted_message_id, :optional_parameters
+
+  @@encoder = nil
 
   def initialize(source_addr, destination_addr, short_message, options={}, seq=nil) 
     
@@ -59,20 +61,6 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
   def message_id
     @udh ? @udh[3] : 0
   end
-
-  EURO_TOKEN = "_X_EURO_X_"
-
-  GSM_ESCAPED_CHARACTERS = {
-    ?(  => "\173", # {
-    ?)  => "\175", # }
-    184 => "\174", # |
-    ?<  => "\133", # [
-    ?>  => "\135", # ]
-    ?=  => "\176", # ~
-    ?/  => "\134", # \
-    134 => "\252", # ^
-    ?e  =>  EURO_TOKEN
-  }
 
   def self.from_wire_data(seq, status, body)
     options = {}
@@ -139,16 +127,16 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
       Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}, msg_reference=#{options[:msg_reference]}, stat=#{options[:stat]}"
     else
       Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
-    end    
-
-    if options[:data_coding] < 2
-      short_message.gsub!(/\215./) { |match| GSM_ESCAPED_CHARACTERS[match[1]] }
-      short_message = Iconv.conv("UTF-8", "HP-ROMAN8", short_message)
-      short_message.gsub!(EURO_TOKEN, "\342\202\254")
-    elsif options[:data_coding] == 8
-      short_message = Iconv.conv("UTF-8", "UTF-16BE", short_message)
     end
 
+    #yield the data_coding and short_message to the encoder if one is set
+    short_message = @@encoder.encode(options[:data_coding], short_message) if @@encoder.respond_to?(:encode)
+
     new(source_addr, destination_addr, short_message, options, seq) 
+  end
+
+  #set an encoder that can be called to yield the data_coding and short_message
+  def self.data_encoder=(encoder)
+    @@encoder = encoder
   end
 end
