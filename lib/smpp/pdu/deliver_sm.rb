@@ -87,7 +87,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     short_message = remaining_bytes.slice!(0...options[:sm_length])
 
     #everything left in remaining_bytes is 3.4 optional parameters
-    options[:optional_parameters] = optional_parameters(remaining_bytes)
+    options[:optional_parameters] = parse_optional_parameters(remaining_bytes)
 
     #parse the 'standard' optional parameters for delivery receipts
     options[:optional_parameters].each do |tag, tlv|

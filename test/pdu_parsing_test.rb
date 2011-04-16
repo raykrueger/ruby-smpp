@@ -98,6 +98,8 @@ class PduParsingTest < Test::Unit::TestCase
     pdu = create_pdu(data)
     assert_equal Smpp::Pdu::SubmitSmResponse, pdu.class
     assert_equal "", pdu.message_id
+    assert pdu.optional_parameters
+    assert_equal "Source address denied.", pdu.optional_parameter(0x2167)
   end
 
   protected

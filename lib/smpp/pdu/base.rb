@@ -168,7 +168,7 @@ module Smpp::Pdu
       @@cmd_map[command_id] = self
     end
 
-    def Base.optional_parameters(remaining_bytes)
+    def Base.parse_optional_parameters(remaining_bytes)
       optionals = {}
       while not remaining_bytes.empty?
         optional = {}
