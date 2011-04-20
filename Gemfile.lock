@@ -13,6 +13,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  eventmachine
+  eventmachine (>= 0.10.0)
   jeweler
   rake
