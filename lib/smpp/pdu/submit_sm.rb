@@ -86,7 +86,7 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     end
 
     #everything left in remaining_bytes is 3.4 optional parameters
-    options[:optional_parameters] = optional_parameters(remaining_bytes)
+    options[:optional_parameters] = parse_optional_parameters(remaining_bytes)
 
     Smpp::Base.logger.debug "SubmitSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
 

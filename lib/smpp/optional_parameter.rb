@@ -11,6 +11,10 @@ class Smpp::OptionalParameter
     self.send symbol
   end
 
+  def to_s
+    self.inspect
+  end
+
   #class methods
   class << self
     def from_wire_data(data)

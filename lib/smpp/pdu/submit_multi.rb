@@ -62,7 +62,7 @@ class Smpp::Pdu::SubmitMulti < Smpp::Pdu::Base
 
     }
 
-    formatted_array.join('\0');
+    formatted_array.join("\0");
   end
   
 end

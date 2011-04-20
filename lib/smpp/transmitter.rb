@@ -4,8 +4,7 @@
 class Smpp::Transmitter < Smpp::Base
 
   def initialize(config, delegate)
-    super(config)
-    @delegate = delegate
+    super
 
     ed = @config[:enquire_link_delay_secs] || 5
     comm_inactivity_timeout = 2 * ed

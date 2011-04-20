@@ -8,6 +8,7 @@ The implementation is based on the Ruby/EventMachine library.
 
 <b>NOTE: Breaking change from 0.1.2 to 0.1.3</b>. See below.
 
+For help please use the Google group here: http://groups.google.com/group/ruby-smpp/topics
 === Glossary
 
 

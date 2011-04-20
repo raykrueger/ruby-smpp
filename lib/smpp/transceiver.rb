@@ -1,4 +1,3 @@
-
 # The SMPP Transceiver maintains a bidirectional connection to an SMSC.
 # Provide a config hash with connection options to get started. 
 # See the sample_gateway.rb for examples of config values.
@@ -13,23 +12,6 @@
 #   unbound(transceiver)
 
 class Smpp::Transceiver < Smpp::Base
-
-  def initialize(config, delegate, pdr_storage={})
-    super(config)
-    @delegate = delegate
-    @pdr_storage = pdr_storage
-    
-    # Array of un-acked MT message IDs indexed by sequence number.
-    # As soon as we receive SubmitSmResponse we will use this to find the 
-    # associated message ID, and then create a pending delivery report.
-    @ack_ids = {}
-    
-    ed = @config[:enquire_link_delay_secs] || 5
-    comm_inactivity_timeout = 2 * ed
-  rescue Exception => ex
-    logger.error "Exception setting up transceiver: #{ex} at #{ex.backtrace.join("\n")}"
-    raise
-  end
 
   # Send an MT SMS message. Delegate will receive message_accepted callback when SMSC 
   # acknowledges, or the message_rejected callback upon error
@@ -54,21 +36,22 @@ class Smpp::Transceiver < Smpp::Base
       # Split the message into parts of 153 characters. (160 - 7 characters for UDH)
       parts = []
       while message.size > 0 do
-        parts << message.slice!(0..152)
+        parts << message.slice!(0..Smpp::Transceiver.get_message_part_size(options))
       end
       
       0.upto(parts.size-1) do |i|
         udh = sprintf("%c", 5)            # UDH is 5 bytes.
         udh << sprintf("%c%c", 0, 3)      # This is a concatenated message 
+
+        #TODO Figure out why this needs to be an int here, it's a string elsewhere
         udh << sprintf("%c", message_id)  # The ID for the entire concatenated message
+
         udh << sprintf("%c", parts.size)  # How many parts this message consists of
         udh << sprintf("%c", i+1)         # This is part i+1
         
-        options = {
-          :esm_class => 64,               # This message contains a UDH header.
-          :udh => udh 
-        }
-        
+        options[:esm_class] = 64 # This message contains a UDH header.
+        options[:udh] = udh
+
         pdu = Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], options)
         write_pdu pdu
         
@@ -98,82 +81,6 @@ class Smpp::Transceiver < Smpp::Base
     end
   end
 
-  # a PDU is received. Parse it and invoke delegate methods.
-  def process_pdu(pdu)
-    case pdu
-    when Pdu::DeliverSm
-      write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number))
-      logger.debug "ESM CLASS #{pdu.esm_class}"
-      if pdu.esm_class != 4
-        # MO message
-        if @delegate.respond_to?(:mo_received)
-          @delegate.mo_received(self, pdu)
-        end
-      else
-        # Delivery report
-        if @delegate.respond_to?(:delivery_report_received)
-          @delegate.delivery_report_received(self, pdu)
-        end
-      end     
-    when Pdu::BindTransceiverResponse
-      case pdu.command_status
-      when Pdu::Base::ESME_ROK
-        logger.debug "Bound OK."
-        @state = :bound
-        if @delegate.respond_to?(:bound)
-          @delegate.bound(self)
-        end
-      when Pdu::Base::ESME_RINVPASWD
-        logger.warn "Invalid password."
-        # scheduele the connection to close, which eventually will cause the unbound() delegate 
-        # method to be invoked.
-        close_connection
-      when Pdu::Base::ESME_RINVSYSID
-        logger.warn "Invalid system id."
-        close_connection
-      else
-        logger.warn "Unexpected BindTransceiverResponse. Command status: #{pdu.command_status}"
-        close_connection
-      end
-    when Pdu::SubmitSmResponse
-      mt_message_id = @ack_ids.delete(pdu.sequence_number)
-      if !mt_message_id
-        raise "Got SubmitSmResponse for unknown sequence_number: #{pdu.sequence_number}"
-      end
-      if pdu.command_status != Pdu::Base::ESME_ROK
-        logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
-        if @delegate.respond_to?(:message_rejected)
-          @delegate.message_rejected(self, mt_message_id, pdu)
-        end
-      else
-        logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
-        if @delegate.respond_to?(:message_accepted)
-          @delegate.message_accepted(self, mt_message_id, pdu)
-        end        
-      end
-      # Now we got the SMSC message id; create pending delivery report.
-      @pdr_storage[pdu.message_id] = mt_message_id            
-    when Pdu::SubmitMultiResponse
-      mt_message_id = @ack_ids[pdu.sequence_number]
-      if !mt_message_id
-        raise "Got SubmitMultiResponse for unknown sequence_number: #{pdu.sequence_number}"
-      end
-      if pdu.command_status != Pdu::Base::ESME_ROK
-        logger.error "Error status in SubmitMultiResponse: #{pdu.command_status}"
-        if @delegate.respond_to?(:message_rejected)
-          @delegate.message_rejected(self, mt_message_id, pdu)
-        end
-      else
-        logger.info "Got OK SubmitMultiResponse (#{pdu.message_id} -> #{mt_message_id})"
-        if @delegate.respond_to?(:message_accepted)
-          @delegate.message_accepted(self, mt_message_id, pdu)
-        end
-      end
-    else
-      super
-    end 
-  end
-
   # Send BindTransceiverResponse PDU.
   def send_bind
     raise IOError, 'Receiver already bound.' unless unbound?
@@ -185,5 +92,18 @@ class Smpp::Transceiver < Smpp::Base
         @config[:source_npi], 
         @config[:source_address_range])
     write_pdu(pdu)
+  end
+
+  # Use data_coding to find out what message part size we can use
+  # http://en.wikipedia.org/wiki/SMS#Message_size
+  def self.get_message_part_size options
+    return 153 if options[:data_coding].nil?
+    return 153 if options[:data_coding] == 0
+    return 134 if options[:data_coding] == 3
+    return 134 if options[:data_coding] == 5
+    return 134 if options[:data_coding] == 6
+    return 134 if options[:data_coding] == 7
+    return 67  if options[:data_coding] == 8
+    return 153
   end
 end

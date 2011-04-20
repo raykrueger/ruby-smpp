@@ -1,14 +1,13 @@
-require 'iconv'
 
 # Received for MO message or delivery notification
 class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base 
   handles_cmd DELIVER_SM
+
   attr_reader :service_type, :source_addr_ton, :source_addr_npi, :source_addr, :dest_addr_ton, :dest_addr_npi, 
               :destination_addr, :esm_class, :protocol_id, :priority_flag, :schedule_delivery_time, 
               :validity_period, :registered_delivery, :replace_if_present_flag, :data_coding, 
               :sm_default_msg_id, :sm_length, :stat, :msg_reference, :udh, :short_message,
               :message_state, :receipted_message_id, :optional_parameters
-
 
   CONCATENATED_SMS_8_BIT_REF = 0
   CONCATENATED_SMS_16_BIT_REF = 8
@@ -29,6 +28,8 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
 
   UDH_5_OCTET_PREFIX = [UDH_5_OCTET[:udl], UDH_5_OCTET[:iei], UDH_5_OCTET[:iei_data_length]]
   UDH_6_OCTET_PREFIX = [UDH_6_OCTET[:udl], UDH_6_OCTET[:iei], UDH_6_OCTET[:iei_data_length]]
+
+  @@encoder = nil
 
   def initialize(source_addr, destination_addr, short_message, options={}, seq=nil) 
     
@@ -106,7 +107,7 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     short_message = remaining_bytes.slice!(0...options[:sm_length])
 
     #everything left in remaining_bytes is 3.4 optional parameters
-    options[:optional_parameters] = optional_parameters(remaining_bytes)
+    options[:optional_parameters] = parse_optional_parameters(remaining_bytes)
 
     #parse the 'standard' optional parameters for delivery receipts
     options[:optional_parameters].each do |tag, tlv|
@@ -150,6 +151,14 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
       Smpp::Base.logger.debug "DeliverSM with source_addr=#{source_addr}, destination_addr=#{destination_addr}"
     end
 
+    #yield the data_coding and short_message to the encoder if one is set
+    short_message = @@encoder.encode(options[:data_coding], short_message) if @@encoder.respond_to?(:encode)
+
     new(source_addr, destination_addr, short_message, options, seq) 
+  end
+
+  #set an encoder that can be called to yield the data_coding and short_message
+  def self.data_encoder=(encoder)
+    @@encoder = encoder
   end
 end
