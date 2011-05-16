@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ruby-smpp}
-  s.version = "0.5.1"
+  s.version = "0.5.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ray Krueger", "August Z. Flatby"]
-  s.date = %q{2011-04-16}
+  s.date = %q{2011-05-16}
   s.description = %q{Ruby implementation of the SMPP protocol, based on EventMachine. SMPP is a protocol that allows ordinary people outside the mobile network to exchange SMS messages directly with mobile operators.}
   s.email = %q{raykrueger@gmail.com}
   s.extra_rdoc_files = [
@@ -72,7 +72,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/raykrueger/ruby-smpp}
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{ruby-smpp}
-  s.rubygems_version = %q{1.5.3}
+  s.rubygems_version = %q{1.4.2}
   s.summary = %q{Ruby implementation of the SMPP protocol, based on EventMachine.}
   s.test_files = [
     "examples/sample_gateway.rb",
@@ -93,21 +93,18 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<eventmachine>, [">= 0"])
+      s.add_runtime_dependency(%q<eventmachine>, [">= 0.10.0"])
       s.add_development_dependency(%q<jeweler>, [">= 0"])
       s.add_development_dependency(%q<rake>, [">= 0"])
-      s.add_runtime_dependency(%q<eventmachine>, [">= 0.10.0"])
     else
-      s.add_dependency(%q<eventmachine>, [">= 0"])
+      s.add_dependency(%q<eventmachine>, [">= 0.10.0"])
       s.add_dependency(%q<jeweler>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
-      s.add_dependency(%q<eventmachine>, [">= 0.10.0"])
     end
   else
-    s.add_dependency(%q<eventmachine>, [">= 0"])
+    s.add_dependency(%q<eventmachine>, [">= 0.10.0"])
     s.add_dependency(%q<jeweler>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
-    s.add_dependency(%q<eventmachine>, [">= 0.10.0"])
   end
 end
 
