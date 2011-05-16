@@ -18,7 +18,6 @@ module Smpp
       @config = config
       @data = ""
       @delegate = delegate
-      @pdr_storage = pdr_storage={}
 
       # Array of un-acked MT message IDs indexed by sequence number.
       # As soon as we receive SubmitSmResponse we will use this to find the 
@@ -206,8 +205,6 @@ module Smpp
             @delegate.message_accepted(self, mt_message_id, pdu)
           end        
         end
-        # Now we got the SMSC message id; create pending delivery report.
-        @pdr_storage[pdu.message_id] = mt_message_id            
       when Pdu::SubmitMultiResponse
         mt_message_id = @ack_ids[pdu.sequence_number]
         if !mt_message_id
