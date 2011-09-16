@@ -151,24 +151,25 @@ module Smpp
         # we don't take this lightly: close the connection
         close_connection
       when Pdu::DeliverSm
-        logger.debug "ESM CLASS #{pdu.esm_class}"
-        if pdu.esm_class != 4
-          # MO message
-          begin
+        begin
+          logger.debug "ESM CLASS #{pdu.esm_class}"
+          if pdu.esm_class != 4
+            # MO message
             if @delegate.respond_to?(:mo_received)
               @delegate.mo_received(self, pdu)
             end
-            write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number))
-          rescue => e
-            logger.warn "Send Receiver Temporary App Error due to #{e.inspect} raised in delegate"
-            write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number, Pdu::Base::ESME_RX_T_APPN))
-          end
-        else
-          # Delivery report
-          if @delegate.respond_to?(:delivery_report_received)
-            @delegate.delivery_report_received(self, pdu)
-          end
-        end     
+          else
+            # Delivery report
+            if @delegate.respond_to?(:delivery_report_received)
+              logger.debug  "HELLO"
+              @delegate.delivery_report_received(self, pdu)
+            end
+          end     
+          write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number))
+        rescue => e
+          logger.warn "Send Receiver Temporary App Error due to #{e.inspect} raised in delegate"
+          write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number, Pdu::Base::ESME_RX_T_APPN))
+        end
       when Pdu::BindTransceiverResponse
         case pdu.command_status
         when Pdu::Base::ESME_ROK
