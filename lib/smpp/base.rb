@@ -161,7 +161,6 @@ module Smpp
           else
             # Delivery report
             if @delegate.respond_to?(:delivery_report_received)
-              logger.debug  "HELLO"
               @delegate.delivery_report_received(self, pdu)
             end
           end     
