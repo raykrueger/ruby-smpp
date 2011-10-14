@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ruby-smpp}
-  s.version = "0.5.2"
+  s.version = "0.6.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ray Krueger", "August Z. Flatby"]
-  s.date = %q{2011-05-16}
+  s.date = %q{2011-10-14}
   s.description = %q{Ruby implementation of the SMPP protocol, based on EventMachine. SMPP is a protocol that allows ordinary people outside the mobile network to exchange SMS messages directly with mobile operators.}
   s.email = %q{raykrueger@gmail.com}
   s.extra_rdoc_files = [
@@ -74,20 +74,6 @@ Gem::Specification.new do |s|
   s.rubyforge_project = %q{ruby-smpp}
   s.rubygems_version = %q{1.4.2}
   s.summary = %q{Ruby implementation of the SMPP protocol, based on EventMachine.}
-  s.test_files = [
-    "examples/sample_gateway.rb",
-    "examples/sample_smsc.rb",
-    "test/delegate.rb",
-    "test/encoding_test.rb",
-    "test/optional_parameter_test.rb",
-    "test/pdu_parsing_test.rb",
-    "test/receiver_test.rb",
-    "test/responsive_delegate.rb",
-    "test/server.rb",
-    "test/smpp_test.rb",
-    "test/submit_sm_test.rb",
-    "test/transceiver_test.rb"
-  ]
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
