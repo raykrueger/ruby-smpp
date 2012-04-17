@@ -178,11 +178,17 @@ module Smpp
           end
         when Pdu::Base::ESME_RINVPASWD
           logger.warn "Invalid password."
+          if @delegate.respond_to?(:invalid_password)
+            @delegate.invalid_password(self)
+          end
           # scheduele the connection to close, which eventually will cause the unbound() delegate 
           # method to be invoked.
           close_connection
         when Pdu::Base::ESME_RINVSYSID
           logger.warn "Invalid system id."
+          if @delegate.respond_to?(:invalid_system_id)
+            @delegate.invalid_system_id(self)
+          end
           close_connection
         else
           logger.warn "Unexpected BindTransceiverResponse. Command status: #{pdu.command_status}"
