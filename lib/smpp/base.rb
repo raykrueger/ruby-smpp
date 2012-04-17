@@ -1,5 +1,4 @@
 require 'timeout'
-require 'iconv'
 require 'scanf'
 require 'monitor'
 require 'eventmachine'
