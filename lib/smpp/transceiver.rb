@@ -42,7 +42,7 @@ class Smpp::Transceiver < Smpp::Base
         end
       else
         bytes = message.bytes.to_a
-        0.upto((bytes.length / 134.0).ceil) do |part|
+        0.upto(bytes.length / 134) do |part|
           parts << bytes.slice(part * 134, 134).pack("C*")
         end
       end
