@@ -31,12 +31,20 @@ class Smpp::Transceiver < Smpp::Base
 
   # Send a concatenated message with a body of > 160 characters as multiple messages.
   def send_concat_mt(message_id, source_addr, destination_addr, message, options = {})
+    message = message.dup
     logger.debug "Sending concatenated MT: #{message}"
     if @state == :bound
       # Split the message into parts of 153 characters. (160 - 7 characters for UDH)
       parts = []
-      while message.size > 0 do
-        parts << message.slice!(0..Smpp::Transceiver.get_message_part_size(options))
+      if options[:data_coding] != 8
+        while message.size > 0 do
+          parts << message.slice!(0..Smpp::Transceiver.get_message_part_size(options))
+        end
+      else
+        bytes = message.bytes.to_a
+        0.upto((bytes / 134.0).ceil) do |part|
+          parts << bytes.slice(part * 134, 134).pack("C*")
+        end
       end
       
       0.upto(parts.size-1) do |i|
