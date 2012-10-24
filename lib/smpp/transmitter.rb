@@ -3,16 +3,6 @@
 
 class Smpp::Transmitter < Smpp::Base
 
-  def initialize(config, delegate)
-    super
-
-    ed = @config[:enquire_link_delay_secs] || 5
-    comm_inactivity_timeout = 2 * ed
-  rescue Exception => ex
-    logger.error "Exception setting up receiver: #{ex} at #{ex.backtrace.join("\n")}"
-    raise
-  end
-
   # a PDU is received. Parse it and invoke delegate methods.
   def process_pdu(pdu)
     case pdu
@@ -53,7 +43,7 @@ class Smpp::Transmitter < Smpp::Base
     logger.debug "Sending MT: #{short_message}"
     if @state == :bound
       pdu = Pdu::SubmitSm.new(source_addr, destination_addr, short_message, options)
-      write_pdu pdu
+      write_pdu(pdu)
     else
       raise InvalidStateException, "Transmitter is unbound. Cannot send MT messages."
     end
@@ -80,7 +70,7 @@ class Smpp::Transmitter < Smpp::Base
           }.merge(options)
 
           pdu = Smpp::Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], combined_options)
-          write_pdu pdu
+          write_pdu(pdu)
         end
       else
         raise InvalidStateException, "Transmitter is unbound. Cannot send MT messages."
