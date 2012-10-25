@@ -1,5 +1,5 @@
 # SMPP v3.4 subset implementation.
-# SMPP is a short message peer-to-peer protocol typically used to communicate 
+# SMPP is a short message peer-to-peer protocol typically used to communicate
 # with SMS Centers (SMSCs) over TCP/IP.
 #
 # August Z. Flatby
@@ -10,7 +10,7 @@ require 'logger'
 $:.unshift(File.dirname(__FILE__))
 require 'smpp/base.rb'
 require 'smpp/transceiver.rb'
-require 'smpp/trasmitter.rb'
+require 'smpp/transmitter.rb'
 require 'smpp/receiver.rb'
 require 'smpp/optional_parameter'
 require 'smpp/pdu/base.rb'
