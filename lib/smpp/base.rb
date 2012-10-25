@@ -5,13 +5,13 @@ require 'eventmachine'
 
 module Smpp
   class InvalidStateException < Exception; end
-    
+
   class Base < EventMachine::Connection
     include Smpp
-    
+
     # :bound or :unbound
     attr_accessor :state
-    
+
     def initialize(config, delegate)
       @state = :unbound
       @config = config
@@ -19,7 +19,7 @@ module Smpp
       @delegate = delegate
 
       # Array of un-acked MT message IDs indexed by sequence number.
-      # As soon as we receive SubmitSmResponse we will use this to find the 
+      # As soon as we receive SubmitSmResponse we will use this to find the
       # associated message ID, and then create a pending delivery report.
       @ack_ids = {}
 
@@ -31,11 +31,11 @@ module Smpp
     def unbound?
       @state == :unbound
     end
-    
+
     def bound?
       @state == :bound
     end
-    
+
     def Base.logger
       @@logger
     end
@@ -47,8 +47,8 @@ module Smpp
     def logger
       @@logger
     end
-    
-    
+
+
     # invoked by EventMachine when connected
     def post_init
       # send Bind PDU if we are a binder (eg
@@ -68,7 +68,7 @@ module Smpp
     # method named: periodic_call_method
     def start_enquire_link_timer(delay_secs)
       logger.info "Starting enquire link timer (with #{delay_secs}s interval)"
-      EventMachine::PeriodicTimer.new(delay_secs) do 
+      EventMachine::PeriodicTimer.new(delay_secs) do
         if error?
           logger.warn "Link timer: Connection is in error state. Disconnecting."
           close_connection
@@ -81,7 +81,7 @@ module Smpp
           rval = defined?(periodic_call_method) ? periodic_call_method : true
 
           # only send an OK if this worked
-          write_pdu Pdu::EnquireLink.new if rval 
+          write_pdu Pdu::EnquireLink.new if rval
         end
       end
     end
@@ -115,7 +115,7 @@ module Smpp
 
       end
     end
-    
+
     # EventMachine::Connection#unbind
     # Invoked by EM when connection is closed. Delegates should consider
     # breaking the event loop and reconnect when they receive this callback.
@@ -124,7 +124,7 @@ module Smpp
         @delegate.unbound(self)
       end
     end
-    
+
     def send_unbind
       write_pdu Pdu::Unbind.new
       @state = :unbound
@@ -132,7 +132,7 @@ module Smpp
 
     # process common PDUs
     # returns true if no further processing necessary
-    def process_pdu(pdu)      
+    def process_pdu(pdu)
       case pdu
       when Pdu::EnquireLinkResponse
         # nop
@@ -142,7 +142,7 @@ module Smpp
         @state = :unbound
         write_pdu(Pdu::UnbindResponse.new(pdu.sequence_number, Pdu::Base::ESME_ROK))
         close_connection
-      when Pdu::UnbindResponse      
+      when Pdu::UnbindResponse
         logger.info "Unbound OK. Closing connection."
         close_connection
       when Pdu::GenericNack
@@ -162,7 +162,7 @@ module Smpp
             if @delegate.respond_to?(:delivery_report_received)
               @delegate.delivery_report_received(self, pdu)
             end
-          end     
+          end
           write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number))
         rescue => e
           logger.warn "Send Receiver Temporary App Error due to #{e.inspect} raised in delegate"
@@ -178,7 +178,7 @@ module Smpp
           end
         when Pdu::Base::ESME_RINVPASWD
           logger.warn "Invalid password."
-          # scheduele the connection to close, which eventually will cause the unbound() delegate 
+          # scheduele the connection to close, which eventually will cause the unbound() delegate
           # method to be invoked.
           close_connection
         when Pdu::Base::ESME_RINVSYSID
@@ -202,7 +202,7 @@ module Smpp
           logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
           if @delegate.respond_to?(:message_accepted)
             @delegate.message_accepted(self, mt_message_id, pdu)
-          end        
+          end
         end
       when Pdu::SubmitMultiResponse
         mt_message_id = @ack_ids[pdu.sequence_number]
@@ -230,7 +230,27 @@ module Smpp
           end
         when Pdu::Base::ESME_RINVPASWD
           logger.warn "Invalid password."
-          # scheduele the connection to close, which eventually will cause the unbound() delegate 
+          # scheduele the connection to close, which eventually will cause the unbound() delegate
+          # method to be invoked.
+          close_connection
+        when Pdu::Base::ESME_RINVSYSID
+          logger.warn "Invalid system id."
+          close_connection
+        else
+          logger.warn "Unexpected BindReceiverResponse. Command status: #{pdu.command_status}"
+          close_connection
+        end
+      when Pdu::BindTransmitterResponse
+        case pdu.command_status
+        when Pdu::Base::ESME_ROK
+          logger.debug "Bound OK."
+          @state = :bound
+          if @delegate.respond_to?(:bound)
+            @delegate.bound(self)
+          end
+        when Pdu::Base::ESME_RINVPASWD
+          logger.warn "Invalid password."
+          # schedule the connection to close, which eventually will cause the unbound() delegate
           # method to be invoked.
           close_connection
         when Pdu::Base::ESME_RINVSYSID
@@ -246,7 +266,7 @@ module Smpp
       end
     end
 
-    private  
+    private
     def write_pdu(pdu)
       logger.debug "<- #{pdu.to_human}"
       hex_debug pdu.data, "<- "
@@ -256,12 +276,12 @@ module Smpp
     def read_pdu(data)
       pdu = nil
       # we may either receive a new request or a response to a previous response.
-      begin        
+      begin
         pdu = Pdu::Base.create(data)
         if !pdu
           logger.warn "Not able to parse PDU!"
         else
-          logger.debug "-> " + pdu.to_human          
+          logger.debug "-> " + pdu.to_human
         end
         hex_debug data, "-> "
       rescue Exception => ex
@@ -278,7 +298,7 @@ module Smpp
     def Base.hex_debug(data, prefix = "")
       logger.debug do
         message = "Hex dump follows:\n"
-        hexdump(data).each_line do |line| 
+        hexdump(data).each_line do |line|
           message << (prefix + line.chomp + "\n")
         end
         message
@@ -303,6 +323,6 @@ module Smpp
       }
       output << ' '*(((2+width-ascii.size)*(2*group+1))/group.to_f).ceil+ascii
       output[1..-1]
-    end    
+    end
   end
 end

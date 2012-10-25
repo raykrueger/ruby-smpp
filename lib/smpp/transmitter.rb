@@ -3,40 +3,6 @@
 
 class Smpp::Transmitter < Smpp::Base
 
-  # a PDU is received. Parse it and invoke delegate methods.
-  def process_pdu(pdu)
-    case pdu
-    when Pdu::SubmitSmResponse
-      if pdu.command_status == Pdu::Base::ESME_ROK
-        logger.debug "Received SubmitSmResponse successfully"
-      else
-        logger.debug "Received SubmitSmResponse failed: #{pdu.command_status}"
-      end
-    when Pdu::BindTransmitterResponse
-      case pdu.command_status
-      when Pdu::Base::ESME_ROK
-        logger.debug "Bound OK."
-        @state = :bound
-        if @delegate.respond_to?(:bound)
-          @delegate.bound(self)
-        end
-      when Pdu::Base::ESME_RINVPASWD
-        logger.warn "Invalid password."
-        # schedule the connection to close, which eventually will cause the unbound() delegate
-        # method to be invoked.
-        close_connection
-      when Pdu::Base::ESME_RINVSYSID
-        logger.warn "Invalid system id."
-        close_connection
-      else
-        logger.warn "Unexpected BindReceiverResponse. Command status: #{pdu.command_status}"
-        close_connection
-      end
-    else
-      super
-    end
-  end
-
   # Send an MT SMS message. Delegate will receive message_accepted callback when SMSC
   # acknowledges, or the message_rejected callback upon error
   def send_mt(message_id, source_addr, destination_addr, short_message, options={})
