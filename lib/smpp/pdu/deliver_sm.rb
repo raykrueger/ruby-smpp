@@ -114,12 +114,12 @@ class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base
     # For example, Tele2 (Norway):
     # "<msisdn><shortcode>?id:10ea34755d3d4f7a20900cdb3349e549 sub:001 dlvrd:001 submit date:0611011228 done date:0611011230 stat:DELIVRD err:000 Text:abc'!10ea34755d3d4f7a20900cdb3349e549"
     if options[:esm_class] == 4
-      msg_ref_match = short_message.match(/id:([^ ]*)/)
+      msg_ref_match = remaining_bytes.match(/id:([^ ]*)/)
       if msg_ref_match
         options[:msg_reference] = msg_ref_match[1]
       end
       
-      stat_match = short_message.match(/stat:([^ ]*)/)
+      stat_match = remaining_bytes.match(/stat:([^ ]*)/)
       if stat_match
         options[:stat] = stat_match[1]
       end
