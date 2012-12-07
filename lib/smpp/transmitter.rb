@@ -3,6 +3,8 @@
 
 class Smpp::Transmitter < Smpp::Base
 
+  attr_reader :ack_ids
+
   # Send an MT SMS message. Delegate will receive message_accepted callback when SMSC
   # acknowledges, or the message_rejected callback upon error
   def send_mt(message_id, source_addr, destination_addr, short_message, options={})
@@ -10,6 +12,10 @@ class Smpp::Transmitter < Smpp::Base
     if @state == :bound
       pdu = Pdu::SubmitSm.new(source_addr, destination_addr, short_message, options)
       write_pdu(pdu)
+      
+      # keep the message ID so we can associate the SMSC message ID with our message
+      # when the response arrives.      
+      @ack_ids[pdu.sequence_number] = message_id
     else
       raise InvalidStateException, "Transmitter is unbound. Cannot send MT messages."
     end
