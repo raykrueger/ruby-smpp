@@ -115,7 +115,7 @@ module Smpp::Pdu
     def Base.optional_parameters_to_buffer(optionals)
       output = ""
       optionals.each do |tag, optional_param|
-        length = optional_param.value.length
+        length = optional_param.value.to_s.length
         buffer = []
         buffer += [tag >> 8, tag & 0xff]
         buffer += [length >> 8, length & 0xff]
