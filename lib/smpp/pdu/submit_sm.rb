@@ -6,10 +6,8 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
               :validity_period, :registered_delivery, :replace_if_present_flag, :data_coding, 
               :sm_default_msg_id, :sm_length, :udh, :short_message, :optional_parameters
 
-  
-  # Note: short_message (the SMS body) must be in iso-8859-1 format
+
   def initialize(source_addr, destination_addr, short_message, options={}, seq = nil)
-     
     @msg_body = short_message
     
     @udh = options[:udh]      
@@ -30,6 +28,12 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     @data_coding             = options[:data_coding]?options[:data_coding]:3 # iso-8859-1
     @sm_default_msg_id       = options[:sm_default_msg_id]?options[:sm_default_msg_id]:0
     @short_message           = short_message
+    
+    # Add UCS2 support
+    if @data_coding == 8
+      @short_message = @short_message.encode("UTF-16BE").force_encoding("BINARY")
+    end
+        
     payload                  = @udh ? @udh + @short_message : @short_message 
     @sm_length               = payload.length
     
