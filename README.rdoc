@@ -1,5 +1,7 @@
 = Ruby-SMPP
 
+{<img src="https://travis-ci.org/raykrueger/ruby-smpp.png" />}[https://travis-ci.org/raykrueger/ruby-smpp]
+
 == DESCRIPTION:
 
 Ruby-SMPP is a Ruby implementation of the SMPP v3.4 protocol. It is suitable for writing gateway daemons that communicate with SMSCs for sending and receiving SMS messages.
@@ -24,7 +26,7 @@ The SMPP 3.4 protocol spec can be downloaded here: http://smsforum.net/SMPP_v3_4
 
 === Testing/Sample Code
 
-Logica provides an SMPP simulator that you can download from http://opensmpp.logica.com. You can 
+Logica provides an SMPP simulator that you can download from http://opensmpp.logica.com. You can
 also sign up for a demo SMPP account at one of the many bulk-SMS providers out there.
 
 For a quick test, download smscsim.jar and smpp.jar from the Logica site, and start the simulator by typing:
@@ -35,7 +37,7 @@ Then type 1 (start simulation), and enter 6000 for port number. The simulator th
 
   ruby sample_gateway.rb
 
-You will be able to send MT messages from the sample gateway terminal window by typing the message body. In the simulator terminal window you should see SMPP PDUs being sent from the sample gateway. 
+You will be able to send MT messages from the sample gateway terminal window by typing the message body. In the simulator terminal window you should see SMPP PDUs being sent from the sample gateway.
 
 You can also send MO messages from the simulator to the sample gateway by typing 7 (log to screen off) and then 4 (send message). MO messages received by the sample gateway will be logged to ./sms_gateway.log.
 
@@ -47,18 +49,18 @@ You can also send MO messages from the simulator to the sample gateway by typing
 
 == BASIC USAGE:
 
-Start the transceiver. Receive delegate callbacks whenever incoming messages or delivery reports arrive. Send messages with Transceiver#send_mt. 
+Start the transceiver. Receive delegate callbacks whenever incoming messages or delivery reports arrive. Send messages with Transceiver#send_mt.
 
   # connect to SMSC
-  tx = EventMachine::run do             
+  tx = EventMachine::run do
     $tx = EventMachine::connect(
-    host, 
-    port, 
-    Smpp::Transceiver, 
-    config,             # a property hash 
+    host,
+    port,
+    Smpp::Transceiver,
+    config,             # a property hash
     delegate            # delegate class that will receive callbacks on MOs and DRs and other events
   end
-  
+
   # send a message
   tx.send_mt(id, from, to, body)
 
