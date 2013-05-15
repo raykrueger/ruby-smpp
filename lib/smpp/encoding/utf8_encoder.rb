@@ -5,7 +5,7 @@ module Smpp
 
     # This class is not required by smpp.rb at all, you need to bring it in yourself.
     # This class also requires iconv, you'll need to ensure it is installed.
-    class Utf8Encoder 
+    class Utf8Encoder
 
       EURO_TOKEN = "_X_EURO_X_"
 
@@ -23,7 +23,11 @@ module Smpp
 
       def encode(data_coding, short_message)
         if data_coding < 2
-          sm = short_message.gsub(/\215./) { |match| GSM_ESCAPED_CHARACTERS[match[1]] }
+          sm = short_message.gsub(/\215./) do |match|
+            lookup = match[1]
+            alternate_lookup = lookup.bytes.first if lookup.respond_to?(:hex)
+            GSM_ESCAPED_CHARACTERS[lookup] || GSM_ESCAPED_CHARACTERS[alternate_lookup]
+          end
           sm = Iconv.conv("UTF-8", "HP-ROMAN8", sm)
           sm.gsub(EURO_TOKEN, "\342\202\254")
         elsif data_coding == 8

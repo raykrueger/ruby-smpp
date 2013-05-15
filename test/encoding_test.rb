@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'rubygems'
 require 'test/unit'
 require 'smpp/encoding/utf8_encoder'
@@ -43,12 +45,7 @@ class EncodingTest < Test::Unit::TestCase
     6b73
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
-
-    expected = "Please deposit \342\202\2545 thanks"
-    assert_equal expected, pdu.short_message
+    assert_encoded(raw_data, "Please deposit \342\202\2545 thanks")
   end
 
   def test_should_unescape_gsm_escaped_left_curly_bracket_symbol
@@ -89,11 +86,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 0000 0000 0000 028d 3d
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
-
-    assert_equal "~", pdu.short_message
+    assert_encoded(raw_data, "~")
   end
 
   def test_should_unescape_gsm_escaped_left_square_bracket_symbol
@@ -149,11 +142,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 0000 0000 0000 028d b8
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
-
-    assert_equal "|", pdu.short_message
+    assert_encoded(raw_data, "|")
   end
 
   def test_should_unescape_gsm_escaped_caret_or_circumflex_symbol
@@ -228,4 +217,14 @@ class EncodingTest < Test::Unit::TestCase
     Smpp::Pdu::Base.create(hex_data)
   end
 
+  private
+
+  def assert_encoded(raw_data, assertion)
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal 0, pdu.data_coding
+
+    assertion.encode!('ASCII-8BIT') if assertion.respond_to?(:encoding)
+    assert_equal assertion, pdu.short_message
+  end
 end
