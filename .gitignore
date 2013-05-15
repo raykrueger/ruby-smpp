@@ -18,6 +18,8 @@ coverage
 rdoc
 pkg
 tags
+.bundle
+vendor/ruby
 
 ## PROJECT::SPECIFIC
 *.log
