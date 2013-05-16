@@ -27,12 +27,7 @@ class EncodingTest < Test::Unit::TestCase
     6D79 2061 6363 6F75 6E74 2C20 4A6F 73C5
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
-
-    expected = "Please deposit \302\2435 into my account, Jos\303\251"
-    assert_equal expected, pdu.short_message
+    assert_encoded(raw_data, "Please deposit \302\2435 into my account, Jos\303\251", :ascii_assertion => false)
   end
 
   def test_should_unescape_gsm_escaped_euro_symbol
@@ -157,7 +152,7 @@ class EncodingTest < Test::Unit::TestCase
     assert_equal Smpp::Pdu::DeliverSm, pdu.class
     assert_equal 0, pdu.data_coding
 
-    expected = "\313\206"
+    expected = "^"
     assert_equal expected, pdu.short_message
   end
 
@@ -173,7 +168,7 @@ class EncodingTest < Test::Unit::TestCase
     8d3e 6374 6572 738d 29
     EOF
 
-    assertion = "Test|ing ˆ stag/ing ~ euro € and {oth\\er [ chara]cters}"
+    assertion = "Test|ing ^ stag/ing ~ euro € and {oth\\er [ chara]cters}"
     assert_encoded(raw_data, assertion, :ascii_assertion => false)
   end
 
@@ -202,9 +197,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 0000 0100 5fbb 506f 756e 6473 bb20
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal "£Pounds£ ", pdu.short_message
+    assert_encoded(raw_data, "£Pounds£ ", :asserted_data_coding => 1, :ascii_assertion => false)
   end
 
   protected
@@ -219,7 +212,7 @@ class EncodingTest < Test::Unit::TestCase
     options[:ascii_assertion] = true unless options[:ascii_assertion] == false
     pdu = create_pdu(raw_data)
     assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
+    assert_equal options[:asserted_data_coding] || 0, pdu.data_coding
 
     assertion.encode!('ASCII-8BIT') if options[:ascii_assertion] && assertion.respond_to?(:encoding)
     assert_equal assertion, pdu.short_message
