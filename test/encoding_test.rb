@@ -45,7 +45,7 @@ class EncodingTest < Test::Unit::TestCase
     6b73
     EOF
 
-    assert_encoded(raw_data, "Please deposit \342\202\2545 thanks")
+    assert_encoded(raw_data, "Please deposit \342\202\2545 thanks", :ascii_assertion => false)
   end
 
   def test_should_unescape_gsm_escaped_left_curly_bracket_symbol
@@ -173,12 +173,8 @@ class EncodingTest < Test::Unit::TestCase
     8d3e 6374 6572 738d 29
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
-
-    expected = "Test|ing ˆ stag/ing ~ euro € and {oth\\er [ chara]cters}"
-    assert_equal expected, pdu.short_message
+    assertion = "Test|ing ˆ stag/ing ~ euro € and {oth\\er [ chara]cters}"
+    assert_encoded(raw_data, assertion, :ascii_assertion => false)
   end
 
   def test_should_convert_ucs_2_into_utf_8_where_data_coding_indicates_its_presence
@@ -219,12 +215,13 @@ class EncodingTest < Test::Unit::TestCase
 
   private
 
-  def assert_encoded(raw_data, assertion)
+  def assert_encoded(raw_data, assertion, options = {})
+    options[:ascii_assertion] = true unless options[:ascii_assertion] == false
     pdu = create_pdu(raw_data)
     assert_equal Smpp::Pdu::DeliverSm, pdu.class
     assert_equal 0, pdu.data_coding
 
-    assertion.encode!('ASCII-8BIT') if assertion.respond_to?(:encoding)
+    assertion.encode!('ASCII-8BIT') if options[:ascii_assertion] && assertion.respond_to?(:encoding)
     assert_equal assertion, pdu.short_message
   end
 end
