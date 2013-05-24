@@ -1,8 +1,4 @@
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 
-gem "eventmachine", ">= 0.10.0"
-
-group :development do
-  gem "jeweler"
-  gem "rake"
-end
+# Specify your gem's dependencies in ruby-smpp.gemspec
+gemspec
