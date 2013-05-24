@@ -1,4 +1,5 @@
-require 'iconv'
+#encoding: ASCII-8BIT
+require 'iconv' if RUBY_VERSION =~ /\A1\.(8|9)/
 
 module Smpp
   module Encoding

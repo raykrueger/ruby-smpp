@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 # Recieving response for an MT message sent to multiple addresses
 # Author: Abhishek Parolkar, (abhishek[at]parolkar.com)
 class Smpp::Pdu::SubmitMultiResponse < Smpp::Pdu::Base

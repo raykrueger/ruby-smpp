@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# encoding: UTF-8
+
 
 # Sample SMS gateway that can receive MOs (mobile originated messages) and
 # DRs (delivery reports), and send MTs (mobile terminated messages).

@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 # The SMPP Receiver maintains a unidirectional connection to an SMSC.
 # Provide a config hash with connection options to get started. 
 # See the sample_gateway.rb for examples of config values.

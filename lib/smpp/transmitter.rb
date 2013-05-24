@@ -1,3 +1,4 @@
+# encoding: UTF-8
 
 # The SMPP Transmitter is the shizzle
 

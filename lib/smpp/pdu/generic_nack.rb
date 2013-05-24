@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 # signals invalid message header
 class Smpp::Pdu::GenericNack < Smpp::Pdu::Base
   handles_cmd GENERIC_NACK

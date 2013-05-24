@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 # Sending an MT message
 class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
   handles_cmd SUBMIT_SM

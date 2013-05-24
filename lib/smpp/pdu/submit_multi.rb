@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 # Sending an MT message to multiple addresses
 # Author: Abhishek Parolkar, (abhishek[at]parolkar.com)
 #TODO: Implement from_wire_data for this pdu class.

@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 class Smpp::OptionalParameter
 
   attr_reader :tag, :value
