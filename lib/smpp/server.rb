@@ -13,7 +13,7 @@ class Smpp::Server < Smpp::Base
   # a proc to invoke for delivery reports,
   # and optionally a hash-like storage for pending delivery reports.
   def initialize(config, received_messages = [], sent_messages = [])
-    super(config)
+    super(config, nil)
     @state = :unbound
     @received_messages = received_messages
     @sent_messages = sent_messages
