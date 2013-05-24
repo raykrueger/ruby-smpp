@@ -12,7 +12,7 @@ module Smpp
     # :bound or :unbound
     attr_accessor :state
 
-    def initialize(config)
+    def initialize(config, delegate)
       @state = :unbound
       @config = config
       @data = ""
