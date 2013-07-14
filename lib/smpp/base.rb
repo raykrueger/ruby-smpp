@@ -68,9 +68,10 @@ module Smpp
     # method named: periodic_call_method
     def start_enquire_link_timer(delay_secs)
       logger.info "Starting enquire link timer (with #{delay_secs}s interval)"
-      EventMachine::PeriodicTimer.new(delay_secs) do
+      timer = EventMachine::PeriodicTimer.new(delay_secs) do
         if error?
           logger.warn "Link timer: Connection is in error state. Disconnecting."
+          timer.cancel
           close_connection
         elsif unbound?
           logger.warn "Link is unbound, waiting until next #{delay_secs} interval before querying again"
