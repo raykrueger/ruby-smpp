@@ -10,6 +10,7 @@ require 'logger'
 
 $:.unshift(File.dirname(__FILE__))
 require 'smpp/base.rb'
+require 'smpp/sender_base.rb'
 require 'smpp/transceiver.rb'
 require 'smpp/transmitter.rb'
 require 'smpp/receiver.rb'

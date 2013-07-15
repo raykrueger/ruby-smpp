@@ -9,32 +9,29 @@ class Smpp::Pdu::SubmitMulti < Smpp::Pdu::Base
 
   # Note: short_message (the SMS body) must be in iso-8859-1 format
   def initialize(source_addr, destination_addr_array, short_message, options={})
-    options.merge!(
-      :esm_class => 0,    # default smsc mode
-      :dcs => 3           # iso-8859-1
-    ) { |key, old_val, new_val| old_val } 
-  
+ 
     @msg_body = short_message
     
     udh = options[:udh]          
-    service_type            = ''
-    source_addr_ton         = 0 # network specific
-    source_addr_npi         = 1 # unknown
+    service_type            = options[:service_type]? options[:service_type] :''
+    source_addr_ton         = options[:source_addr_ton]?options[:source_addr_ton]:0 # network specific
+    source_addr_npi         = options[:source_addr_npi]?options[:source_addr_npi]:1 # unknown
     number_of_dests         = destination_addr_array.length # Max value can be 254
-    dest_addr_ton           = 1 # international
-    dest_addr_npi           = 1 # unknown
+    dest_addr_ton           = options[:dest_addr_ton]?options[:dest_addr_ton]:1 # international
+    dest_addr_npi           = options[:dest_addr_npi]?options[:dest_addr_npi]:1 # unknown 
     dest_addresses          = build_destination_addresses(destination_addr_array,dest_addr_ton,dest_addr_npi,IS_SMEADDR) 
-    esm_class               = options[:esm_class]
-    protocol_id             = 0
-    priority_flag           = 0
-    schedule_delivery_time  = ''
-    validity_period         = ''
-    registered_delivery     = 1 # we want delivery notifications
-    replace_if_present_flag = 0
-    data_coding             = options[:dcs]
-    sm_default_msg_id       = 0
+    esm_class               = options[:esm_class]?options[:esm_class]:0 # default smsc mode
+    protocol_id             = options[:protocol_id]?options[:protocol_id]:0
+    priority_flag           = options[:priority_flag]?options[:priority_flag]:0
+    schedule_delivery_time  = options[:schedule_delivery_time]?options[:schedule_delivery_time]:''
+    validity_period         = options[:validity_period]?options[:validity_period]:''
+    registered_delivery     = options[:registered_delivery]?options[:registered_delivery]:1
+    replace_if_present_flag = options[:replace_if_present_flag]?options[:replace_if_present_flag]:0
+    data_coding             = options[:data_coding]?options[:data_coding]:3 # iso-8859-1
+    sm_default_msg_id       = options[:sm_default_msg_id]?options[:sm_default_msg_id]:0
     payload                 = udh ? udh + short_message : short_message # this used to be (short_message + "\0")
     sm_length               = payload.length
+
     
     # craft the string/byte buffer
     pdu_body = sprintf("%s\0%c%c%s\0%c%s\0%c%c%c%s\0%s\0%c%c%c%c%c%s", service_type, source_addr_ton, source_addr_npi, source_addr, number_of_dests,dest_addresses, esm_class, protocol_id, priority_flag, schedule_delivery_time, validity_period,
