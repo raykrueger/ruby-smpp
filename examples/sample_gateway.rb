@@ -81,33 +81,27 @@ class SampleGateway
 
   # ruby-smpp delegate methods
 
-  def mo_received(params)
-    pdu = params[:pdu]
+  def mo_received(transceiver, pdu)
     logger.info "Delegate: mo_received: from #{pdu.source_addr} to #{pdu.destination_addr}: #{pdu.short_message}"
   end
 
-  def delivery_report_received(params)
-    pdu = params[:pdu]
+  def delivery_report_received(transceiver, pdu)
     logger.info "Delegate: delivery_report_received: ref #{pdu.msg_reference} stat #{pdu.stat}"
   end
 
-  def message_accepted(params)
-    pdu = params[:pdu]
-    mt_message_id = params[:mt_message_id]
+  def message_accepted(transceiver, mt_message_id, pdu)
     logger.info "Delegate: message_accepted: id #{mt_message_id} smsc ref id: #{pdu.message_id}"
   end
 
-  def message_rejected(params)
-    pdu = params[:pdu]
-    mt_message_id = params[:mt_message_id]
+  def message_rejected(transceiver, mt_message_id, pdu)
     logger.info "Delegate: message_rejected: id #{mt_message_id} smsc ref id: #{pdu.message_id}"
   end
 
-  def bound(params)
+  def bound(transceiver)
     logger.info "Delegate: transceiver bound"
   end
 
-  def unbound(params)
+  def unbound(transceiver)
     logger.info "Delegate: transceiver unbound"
     EventMachine::stop_event_loop
   end
