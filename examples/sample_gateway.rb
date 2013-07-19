@@ -20,15 +20,15 @@ module KeyboardHandler
   def receive_line(data)
     sender, receiver, *body_parts = data.split
     unless sender && receiver && body_parts.size > 0
-      puts "Syntax: <sender> <receiver> <message body>"      
+      puts "Syntax: <sender> <receiver> <message body>"
     else
       body = body_parts.join(' ')
-      puts "Sending MT from #{sender} to #{receiver}: #{body}"  
+      puts "Sending MT from #{sender} to #{receiver}: #{body}"
       SampleGateway.send_mt(sender, receiver, body)
     end
     prompt
   end
-  
+
   def prompt
     print "MT: "
     $stdout.flush
@@ -36,16 +36,16 @@ module KeyboardHandler
 end
 
 class SampleGateway
-  
-  # MT id counter. 
+
+  # MT id counter.
   @@mt_id = 0
-  
+
   # expose SMPP transceiver's send_mt method
   def self.send_mt(*args)
     @@mt_id += 1
     @@tx.send_mt(@@mt_id, *args)
   end
-    
+
   def logger
     Smpp::Base.logger
   end
@@ -53,22 +53,22 @@ class SampleGateway
   def start(config)
     # The transceiver sends MT messages to the SMSC. It needs a storage with Hash-like
     # semantics to map SMSC message IDs to your own message IDs.
-    pdr_storage = {} 
+    pdr_storage = {}
 
     # Run EventMachine in loop so we can reconnect when the SMSC drops our connection.
     puts "Connecting to SMSC..."
     loop do
-      EventMachine::run do             
+      EventMachine::run do
         @@tx = EventMachine::connect(
-          config[:host], 
-          config[:port], 
-          Smpp::Transceiver, 
-          config, 
+          config[:host],
+          config[:port],
+          Smpp::Transceiver,
+          config,
           self    # delegate that will receive callbacks on MOs and DRs and other events
-        )     
+        )
         print "MT: "
         $stdout.flush
-        
+
         # Start consuming MT messages (in this case, from the console)
         # Normally, you'd hook this up to a message queue such as Starling
         # or ActiveMQ via STOMP.
@@ -78,8 +78,8 @@ class SampleGateway
       sleep 5
     end
   end
-  
-  # ruby-smpp delegate methods 
+
+  # ruby-smpp delegate methods
 
   def mo_received(transceiver, pdu)
     logger.info "Delegate: mo_received: from #{pdu.source_addr} to #{pdu.destination_addr}: #{pdu.short_message}"
@@ -101,19 +101,19 @@ class SampleGateway
     logger.info "Delegate: transceiver bound"
   end
 
-  def unbound(transceiver)  
+  def unbound(transceiver)
     logger.info "Delegate: transceiver unbound"
     EventMachine::stop_event_loop
   end
-  
+
 end
 
 # Start the Gateway
-begin   
-  puts "Starting SMS Gateway. Please check the log at #{LOGFILE}"  
+begin
+  puts "Starting SMS Gateway. Please check the log at #{LOGFILE}"
 
   # SMPP properties. These parameters work well with the Logica SMPP simulator.
-  # Consult the SMPP spec or your mobile operator for the correct settings of 
+  # Consult the SMPP spec or your mobile operator for the correct settings of
   # the other properties.
   config = {
     :host => '127.0.0.1',
@@ -129,9 +129,9 @@ begin
     :source_address_range => '',
     :destination_address_range => '',
     :enquire_link_delay_secs => 10
-  }  
+  }
   gw = SampleGateway.new
-  gw.start(config)  
+  gw.start(config)
 rescue Exception => ex
   puts "Exception in SMS Gateway: #{ex} at #{ex.backtrace.join("\n")}"
 end
