@@ -1,5 +1,6 @@
-
-# The SMPP Transmitter is the shizzle
+# The SMPP Transmitter maintains a unidirectional connection to an SMSC.
+# Provide a config hash with connection options to get started.
+# See the sample_gateway.rb for examples of config values.
 
 class Smpp::Transmitter < Smpp::Base
 
@@ -12,9 +13,9 @@ class Smpp::Transmitter < Smpp::Base
     if @state == :bound
       pdu = Pdu::SubmitSm.new(source_addr, destination_addr, short_message, options)
       write_pdu(pdu)
-      
+
       # keep the message ID so we can associate the SMSC message ID with our message
-      # when the response arrives.      
+      # when the response arrives.
       @ack_ids[pdu.sequence_number] = message_id
     else
       raise InvalidStateException, "Transmitter is unbound. Cannot send MT messages."
