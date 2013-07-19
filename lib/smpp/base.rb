@@ -109,9 +109,7 @@ module Smpp
           process_pdu(pdu) if pdu
         rescue Exception => e
           logger.error "Error receiving data: #{e}\n#{e.backtrace.join("\n")}"
-          if @delegate.respond_to?(:data_error)
-            @delegate.data_error(e)
-          end
+          run_callback(:data_error, e)
         end
 
       end
@@ -121,14 +119,18 @@ module Smpp
     # Invoked by EM when connection is closed. Delegates should consider
     # breaking the event loop and reconnect when they receive this callback.
     def unbind
-      if @delegate.respond_to?(:unbound)
-        @delegate.unbound(self)
-      end
+      run_callback(:unbound, self)
     end
 
     def send_unbind
       write_pdu Pdu::Unbind.new
       @state = :unbound
+    end
+
+    def run_callback(cb, *args)
+      if @delegate.respond_to?(cb)
+        @delegate.send(cb, *args)
+      end
     end
 
     # process common PDUs
@@ -155,14 +157,10 @@ module Smpp
           logger.debug "ESM CLASS #{pdu.esm_class}"
           if pdu.esm_class != 4
             # MO message
-            if @delegate.respond_to?(:mo_received)
-              @delegate.mo_received(self, pdu)
-            end
+            run_callback(:mo_received, self, pdu)
           else
             # Delivery report
-            if @delegate.respond_to?(:delivery_report_received)
-              @delegate.delivery_report_received(self, pdu)
-            end
+            run_callback(:delivery_report_received, self, pdu)
           end
           write_pdu(Pdu::DeliverSmResponse.new(pdu.sequence_number))
         rescue => e
@@ -174,19 +172,20 @@ module Smpp
         when Pdu::Base::ESME_ROK
           logger.debug "Bound OK."
           @state = :bound
-          if @delegate.respond_to?(:bound)
-            @delegate.bound(self)
-          end
+          run_callback(:bound, self)
         when Pdu::Base::ESME_RINVPASWD
           logger.warn "Invalid password."
-          # scheduele the connection to close, which eventually will cause the unbound() delegate
+          # schedule the connection to close, which eventually will cause the unbound() delegate
           # method to be invoked.
+          run_callback(:invalid_password, self)
           close_connection
         when Pdu::Base::ESME_RINVSYSID
           logger.warn "Invalid system id."
+          run_callback(:invalid_system_id, self)
           close_connection
         else
           logger.warn "Unexpected BindTransceiverResponse. Command status: #{pdu.command_status}"
+          run_callback(:unexpected_error, self)
           close_connection
         end
       when Pdu::SubmitSmResponse
@@ -196,14 +195,10 @@ module Smpp
         end
         if pdu.command_status != Pdu::Base::ESME_ROK
           logger.error "Error status in SubmitSmResponse: #{pdu.command_status}"
-          if @delegate.respond_to?(:message_rejected)
-            @delegate.message_rejected(self, mt_message_id, pdu)
-          end
+          run_callback(:message_rejected, self, mt_message_id, pdu)
         else
           logger.info "Got OK SubmitSmResponse (#{pdu.message_id} -> #{mt_message_id})"
-          if @delegate.respond_to?(:message_accepted)
-            @delegate.message_accepted(self, mt_message_id, pdu)
-          end
+          run_callback(:message_accepted, self, mt_message_id, pdu)
         end
       when Pdu::SubmitMultiResponse
         mt_message_id = @ack_ids[pdu.sequence_number]
@@ -212,33 +207,30 @@ module Smpp
         end
         if pdu.command_status != Pdu::Base::ESME_ROK
           logger.error "Error status in SubmitMultiResponse: #{pdu.command_status}"
-          if @delegate.respond_to?(:message_rejected)
-            @delegate.message_rejected(self, mt_message_id, pdu)
-          end
+          run_callback(:message_rejected, self, mt_message_id, pdu)
         else
           logger.info "Got OK SubmitMultiResponse (#{pdu.message_id} -> #{mt_message_id})"
-          if @delegate.respond_to?(:message_accepted)
-            @delegate.message_accepted(self, mt_message_id, pdu)
-          end
+          run_callback(:message_accepted, self, mt_message_id, pdu)
         end
       when Pdu::BindReceiverResponse
         case pdu.command_status
         when Pdu::Base::ESME_ROK
           logger.debug "Bound OK."
           @state = :bound
-          if @delegate.respond_to?(:bound)
-            @delegate.bound(self)
-          end
+          run_callback(:bound, self)
         when Pdu::Base::ESME_RINVPASWD
           logger.warn "Invalid password."
+          run_callback(:invalid_password, self)
           # scheduele the connection to close, which eventually will cause the unbound() delegate
           # method to be invoked.
           close_connection
         when Pdu::Base::ESME_RINVSYSID
           logger.warn "Invalid system id."
+          run_callback(:invalid_system_id, self)
           close_connection
         else
           logger.warn "Unexpected BindReceiverResponse. Command status: #{pdu.command_status}"
+          run_callback(:unexpected_error, self)
           close_connection
         end
       when Pdu::BindTransmitterResponse
@@ -246,23 +238,25 @@ module Smpp
         when Pdu::Base::ESME_ROK
           logger.debug "Bound OK."
           @state = :bound
-          if @delegate.respond_to?(:bound)
-            @delegate.bound(self)
-          end
+          run_callback(:bound, self)
         when Pdu::Base::ESME_RINVPASWD
           logger.warn "Invalid password."
+          run_callback(:invalid_password, self)
           # schedule the connection to close, which eventually will cause the unbound() delegate
           # method to be invoked.
           close_connection
         when Pdu::Base::ESME_RINVSYSID
           logger.warn "Invalid system id."
+          run_callback(:invalid_system_id, self)
           close_connection
         else
           logger.warn "Unexpected BindReceiverResponse. Command status: #{pdu.command_status}"
+          run_callback(:unexpected_error, self)
           close_connection
         end
       else
         logger.warn "(#{self.class.name}) Received unexpected PDU: #{pdu.to_human}."
+        run_callback(:unexpected_pdu, self, pdu)
         close_connection
       end
     end
