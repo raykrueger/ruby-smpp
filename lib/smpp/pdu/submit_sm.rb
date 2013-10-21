@@ -18,10 +18,10 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     @service_type            = options[:service_type]? options[:service_type] :''
     @source_addr_ton         = options[:source_addr_ton]?options[:source_addr_ton]:0 # network specific
     @source_addr_npi         = options[:source_addr_npi]?options[:source_addr_npi]:1 # unknown
-    @source_addr             = source_addr
+    @source_addr             = source_addr.to_s
     @dest_addr_ton           = options[:dest_addr_ton]?options[:dest_addr_ton]:1 # international
     @dest_addr_npi           = options[:dest_addr_npi]?options[:dest_addr_npi]:1 # unknown
-    @destination_addr        = destination_addr
+    @destination_addr        = destination_addr.to_s
     @esm_class               = options[:esm_class]?options[:esm_class]:0 # default smsc mode
     @protocol_id             = options[:protocol_id]?options[:protocol_id]:0
     @priority_flag           = options[:priority_flag]?options[:priority_flag]:0
