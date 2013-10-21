@@ -89,7 +89,8 @@ module Smpp::Pdu
       @command_status = command_status
       @body = body
       @sequence_number = seq
-      @data = fixed_int(length) + fixed_int(command_id) + fixed_int(command_status) + fixed_int(seq) + body
+      header = [length, command_id, command_status, seq].pack("NNNN")
+      @data = header + body
     end
 
     def logger
@@ -100,16 +101,6 @@ module Smpp::Pdu
       # convert header (4 bytes) to array of 4-byte ints
       a = @data.to_s.unpack('N4')
       sprintf("(%22s) len=%3d cmd=%8s status=%1d seq=%03d (%s)", self.class.to_s[11..-1], a[0], a[1].to_s(16), a[2], a[3], @body)
-    end
-
-    # return int as binary string of 4 octets
-    def Base.fixed_int(value)
-      arr = [value >> 24, value >> 16, value >> 8, value & 0xff]
-      arr.pack("cccc")
-    end
-
-    def fixed_int(value)
-      Base.fixed_int(value)
     end
 
     #expects a hash like {tag => Smpp::OptionalParameter}
