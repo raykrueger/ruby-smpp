@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'rubygems'
 require 'test/unit'
 require 'smpp/encoding/utf8_encoder'
@@ -25,12 +27,7 @@ class EncodingTest < Test::Unit::TestCase
     6D79 2061 6363 6F75 6E74 2C20 4A6F 73C5
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
-
-    expected = "Please deposit \302\2435 into my account, Jos\303\251"
-    assert_equal expected, pdu.short_message
+    assert_encoded(raw_data, "Please deposit \302\2435 into my account, Jos\303\251", :ascii_assertion => false)
   end
 
   def test_should_unescape_gsm_escaped_euro_symbol
@@ -43,12 +40,7 @@ class EncodingTest < Test::Unit::TestCase
     6b73
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
-
-    expected = "Please deposit \342\202\2545 thanks"
-    assert_equal expected, pdu.short_message
+    assert_encoded(raw_data, "Please deposit \342\202\2545 thanks", :ascii_assertion => false)
   end
 
   def test_should_unescape_gsm_escaped_left_curly_bracket_symbol
@@ -89,11 +81,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 0000 0000 0000 028d 3d
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
-
-    assert_equal "~", pdu.short_message
+    assert_encoded(raw_data, "~")
   end
 
   def test_should_unescape_gsm_escaped_left_square_bracket_symbol
@@ -149,11 +137,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 0000 0000 0000 028d b8
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
-
-    assert_equal "|", pdu.short_message
+    assert_encoded(raw_data, "|")
   end
 
   def test_should_unescape_gsm_escaped_caret_or_circumflex_symbol
@@ -168,7 +152,7 @@ class EncodingTest < Test::Unit::TestCase
     assert_equal Smpp::Pdu::DeliverSm, pdu.class
     assert_equal 0, pdu.data_coding
 
-    expected = "\313\206"
+    expected = "^"
     assert_equal expected, pdu.short_message
   end
 
@@ -184,12 +168,8 @@ class EncodingTest < Test::Unit::TestCase
     8d3e 6374 6572 738d 29
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal 0, pdu.data_coding
-
-    expected = "Test|ing ˆ stag/ing ~ euro € and {oth\\er [ chara]cters}"
-    assert_equal expected, pdu.short_message
+    assertion = "Test|ing ^ stag/ing ~ euro € and {oth\\er [ chara]cters}"
+    assert_encoded(raw_data, assertion, :ascii_assertion => false)
   end
 
   def test_should_convert_ucs_2_into_utf_8_where_data_coding_indicates_its_presence
@@ -217,9 +197,7 @@ class EncodingTest < Test::Unit::TestCase
     0000 0000 0100 5fbb 506f 756e 6473 bb20
     EOF
 
-    pdu = create_pdu(raw_data)
-    assert_equal Smpp::Pdu::DeliverSm, pdu.class
-    assert_equal "£Pounds£ ", pdu.short_message
+    assert_encoded(raw_data, "£Pounds£ ", :asserted_data_coding => 1, :ascii_assertion => false)
   end
 
   protected
@@ -228,4 +206,15 @@ class EncodingTest < Test::Unit::TestCase
     Smpp::Pdu::Base.create(hex_data)
   end
 
+  private
+
+  def assert_encoded(raw_data, assertion, options = {})
+    options[:ascii_assertion] = true unless options[:ascii_assertion] == false
+    pdu = create_pdu(raw_data)
+    assert_equal Smpp::Pdu::DeliverSm, pdu.class
+    assert_equal options[:asserted_data_coding] || 0, pdu.data_coding
+
+    assertion.encode!('ASCII-8BIT') if options[:ascii_assertion] && assertion.respond_to?(:encoding)
+    assert_equal assertion, pdu.short_message
+  end
 end

@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 class Smpp::Pdu::UnbindResponse < Smpp::Pdu::Base
   handles_cmd UNBIND_RESP
 

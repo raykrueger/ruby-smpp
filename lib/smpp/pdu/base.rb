@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # PDUs are the protcol base units in SMPP
 module Smpp::Pdu
   class Base

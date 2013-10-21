@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# encoding: UTF-8
+
 
 # Sample SMPP SMS Gateway. 
 
