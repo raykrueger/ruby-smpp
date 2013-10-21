@@ -10,7 +10,7 @@ class Smpp::Server < Smpp::Base
 
   attr_accessor :bind_status
 
-  # Expects a config hash, 
+  # Expects a config hash,
   # a proc to invoke for incoming (MO) messages,
   # a proc to invoke for delivery reports,
   # and optionally a hash-like storage for pending delivery reports.
@@ -19,7 +19,7 @@ class Smpp::Server < Smpp::Base
     @state = :unbound
     @received_messages = received_messages
     @sent_messages = sent_messages
-    
+
     ed = @config[:enquire_link_delay_secs] || 5
     comm_inactivity_timeout = [ed - 5, 3].max
   rescue Exception => ex
@@ -27,7 +27,7 @@ class Smpp::Server < Smpp::Base
     raise
   end
 
-  
+
   #######################################################################
   # Session management functions
   #######################################################################
@@ -43,7 +43,7 @@ class Smpp::Server < Smpp::Base
     @state == :unbound
   end
   # set of valid bind statuses
-  BIND_STATUSES = {:transmitter => :bound_tx, 
+  BIND_STATUSES = {:transmitter => :bound_tx,
            :receiver => :bound_rx, :transceiver => :bound_trx}
   # set the bind status based on the common-name for the bind class
   def set_bind_status(bind_classname)
@@ -114,18 +114,18 @@ class Smpp::Server < Smpp::Base
   # pdu.
   def send_bind_response(bind_pdu, bind_class)
     resp_pdu = bind_class.new(
-                  bind_pdu.sequence_number, 
+                  bind_pdu.sequence_number,
                   # currently assume that it binds ok
-                  Pdu::Base::ESME_ROK, 
+                  Pdu::Base::ESME_ROK,
                   # TODO: not sure where we get the system ID
                   # is this the session id?
                   bind_pdu.system_id)
     write_pdu(resp_pdu)
   end
- 
+
   #######################################################################
   # Message submission (transmitter) functions (used by transmitter and
-  # transceiver-bound system) 
+  # transceiver-bound system)
   # Note - we only support submit_sm message type, not submit_multi or
   # data_sm message types
   #######################################################################
@@ -153,7 +153,7 @@ class Smpp::Server < Smpp::Base
     pdu = Pdu::SubmitSmResponse.new(m_seq, Pdu::Base::ESME_ROK, message_id = '' )
     write_pdu pdu
     @received_messages.delete m_seq
-    
+
     logger.info "Received submit sm message: #{m_seq}"
   end
 
@@ -170,7 +170,7 @@ class Smpp::Server < Smpp::Base
     # TODO: probably should not "raise" here - what's better?
     raise IOError, "Connection not bound." if unbound?
     raise IOError, "Connection not set to receive" unless receiving?
-    
+
     # submit the given message
     new_pdu = Pdu::DeliverSm.new(from, to, message, config)
     write_pdu(new_pdu)
@@ -219,7 +219,7 @@ class Smpp::Server < Smpp::Base
     else
       # for generic functions or default fallback
       super(pdu)
-    end 
+    end
   end
- 
+
 end

@@ -17,6 +17,6 @@ class Smpp::Pdu::GenericNack < Smpp::Pdu::Base
   end
 
   def self.from_wire_data(seq, status, body)
-    new(seq,status,body) 
+    new(seq,status,body)
   end
-end        
+end

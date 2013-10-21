@@ -3,7 +3,7 @@
 class Smpp::OptionalParameter
 
   attr_reader :tag, :value
-  
+
   def initialize(tag, value)
     @tag = tag
     @value = value
