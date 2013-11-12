@@ -91,7 +91,7 @@ module Smpp::Pdu
       if RUBY_VERSION < "1.9"
         @data = fixed_int(length) + fixed_int(command_id) + fixed_int(command_status) + fixed_int(seq) + body
       else
-        @data =  (fixed_int(length) + fixed_int(command_id) + fixed_int(command_status) + fixed_int(seq)).force_encoding("BINARY") + body.force_encoding("BINARY")
+        @data =  (fixed_int(length) + fixed_int(command_id) + fixed_int(command_status) + fixed_int(seq)).force_encoding("UTF-8") + body.force_encoding("UTF-8")
       end
     end      
 
