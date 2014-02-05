@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 # the delagate receives callbacks when interesting things happen on the connection
 class Delegate
 

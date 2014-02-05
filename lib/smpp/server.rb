@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 # --------
 # This is experimental stuff submitted by taryn@taryneast.org
 # --------

@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 #!/usr/bin/env ruby
 
 # Sample SMS gateway that can receive MOs (mobile originated messages) and

@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 # The SMPP Transceiver maintains a bidirectional connection to an SMSC.
 # Provide a config hash with connection options to get started. 
 # See the sample_gateway.rb for examples of config values.

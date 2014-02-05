@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 # Basic SMS class for sample gateway
 
 class Sms

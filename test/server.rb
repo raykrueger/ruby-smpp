@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 # a server which immediately requests the client to unbind
 module Server
   def self.config
