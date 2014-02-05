@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 require 'rubygems'
 require 'test/unit'
 require 'smpp/encoding/utf8_encoder'

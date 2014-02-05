@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 class Smpp::Pdu::EnquireLink < Smpp::Pdu::Base
   handles_cmd ENQUIRE_LINK
 

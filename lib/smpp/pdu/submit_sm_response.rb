@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 class Smpp::Pdu::SubmitSmResponse < Smpp::Pdu::Base
   handles_cmd SUBMIT_SM_RESP
 

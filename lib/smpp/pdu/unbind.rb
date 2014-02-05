@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 class Smpp::Pdu::Unbind < Smpp::Pdu::Base
   handles_cmd UNBIND
 

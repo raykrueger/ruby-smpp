@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 class Smpp::Pdu::BindRespBase < Smpp::Pdu::Base
   class << self; attr_accessor :command_id ; end
   attr_accessor :system_id

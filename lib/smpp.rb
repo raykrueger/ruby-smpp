@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 # SMPP v3.4 subset implementation.
 # SMPP is a short message peer-to-peer protocol typically used to communicate
 # with SMS Centers (SMSCs) over TCP/IP.

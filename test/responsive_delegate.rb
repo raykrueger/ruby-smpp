@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 #TODO This should be made prettier with mocha
 class ResponsiveDelegate
   attr_reader :seq, :event_counter

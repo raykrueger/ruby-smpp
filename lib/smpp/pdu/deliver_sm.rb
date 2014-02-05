@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 
 # Received for MO message or delivery notification
 class Smpp::Pdu::DeliverSm < Smpp::Pdu::Base 
