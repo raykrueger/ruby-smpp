@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require 'rubygems'
 require 'test/unit'
 require 'smpp'
@@ -7,17 +8,17 @@ require 'responsive_delegate'
 
 class Poller
   def start
-    
+
   end
 end
 
 
 class SmppTest < Test::Unit::TestCase
-  
+
   def config
     Server::config
   end
-  
+
   def test_transceiver_should_bind_and_unbind_then_stop
     EventMachine.run {
       EventMachine.start_server "localhost", 9000, Server::Unbind
@@ -160,7 +161,7 @@ class SmppTest < Test::Unit::TestCase
     assert_equal(pdu1.sequence_number, pdu2.sequence_number)
     assert_equal(pdu1.command_status, pdu2.command_status)
   end
-    
+
   def test_generic_nack
     pdu1 = Smpp::Pdu::GenericNack.new(nil, Smpp::Pdu::Base::ESME_RTHROTTLED )
     pdu2 = Smpp::Pdu::Base.create(pdu1.data)
@@ -186,7 +187,7 @@ class SmppTest < Test::Unit::TestCase
   end
 
   #TODO: This test is known to fail since this portion of the library is incomplete.
-  def _todo_test_submit_multi 
+  def _todo_test_submit_multi
     pdu1 = Smpp::Pdu::SubmitMulti.new( '11111', ['1111111111','1111111112','1111111113'], "This is a test" )
     pdu2 = Smpp::Pdu::Base.create(pdu1.data)
     assert_instance_of(Smpp::Pdu::SubmitMulti, pdu2)
@@ -221,19 +222,19 @@ class SmppTest < Test::Unit::TestCase
     ]
     pdu1 = Smpp::Pdu::SubmitMultiResponse.new( nil, Smpp::Pdu::Base::ESME_ROK, '3', smes )
     pdu2 = Smpp::Pdu::Base.create(pdu1.data)
-    
+
     assert_instance_of(Smpp::Pdu::SubmitMultiResponse, pdu2)
     assert_equal(pdu1.unsuccess_smes, pdu2.unsuccess_smes)
     assert_equal(pdu1.sequence_number, pdu2.sequence_number)
     assert_equal(pdu1.command_status, pdu2.command_status)
   end
-  
+
   def test_should_parse_ref_and_stat_from_deliver_sm
     direct = Smpp::Pdu::DeliverSm.new( '1', '2', "419318028472222#id:11f8f46639bd4f7a209016e1a181e3ae sub:001 dlvrd:001 submit date:0902191702 done date:0902191702 stat:DELIVRD err:000 Text:TVILLING: Sl? ut h?'!11f8f46639bd4f7a209016e1a181e3ae", :esm_class => 4)
     parsed = Smpp::Pdu::Base.create(direct.data)
     assert_equal("DELIVRD", parsed.stat)
     assert_equal("11f8f46639bd4f7a209016e1a181e3ae", parsed.msg_reference)
   end
-  
+
 
 end

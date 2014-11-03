@@ -1,7 +1,9 @@
+# encoding: UTF-8
+
 # Recieving response for an MT message sent to multiple addresses
 # Author: Abhishek Parolkar, (abhishek[at]parolkar.com)
 class Smpp::Pdu::SubmitMultiResponse < Smpp::Pdu::Base
-  class UnsuccessfulSme 
+  class UnsuccessfulSme
     Struct.new(:dest_addr_ton, :dest_addr_npi, :destination_addr, :error_status_code)
   end
 
@@ -16,9 +18,9 @@ class Smpp::Pdu::SubmitMultiResponse < Smpp::Pdu::Base
     packed_smes = ""
     unsuccess_smes.each do |sme|
       packed_smes << [
-        sme.dest_addr_ton, 
-        sme.dest_addr_npi, 
-        sme.destination_addr, 
+        sme.dest_addr_ton,
+        sme.dest_addr_npi,
+        sme.destination_addr,
         sme.error_status_code
       ].pack("CCZ*N")
     end
@@ -36,14 +38,14 @@ class Smpp::Pdu::SubmitMultiResponse < Smpp::Pdu::Base
       #unpack the next sme
       dest_addr_ton, dest_addr_npi, destination_addr, error_status_code =
         rest.unpack("CCZ*N")
-      #remove the SME from rest 
+      #remove the SME from rest
       rest.slice!(0,7 + destination_addr.length)
       unsuccess_smes << UnsuccessfulSme.new(dest_addr_ton, dest_addr_npi, destination_addr, error_status_code)
     end
-    
+
     new(seq, status, message_id, unsuccess_smes)
   end
 
 
 
-end    
+end

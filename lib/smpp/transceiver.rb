@@ -1,7 +1,9 @@
+# encoding: UTF-8
+
 # The SMPP Transceiver maintains a bidirectional connection to an SMSC.
-# Provide a config hash with connection options to get started. 
+# Provide a config hash with connection options to get started.
 # See the sample_gateway.rb for examples of config values.
-# The transceiver accepts a delegate object that may implement 
+# The transceiver accepts a delegate object that may implement
 # the following (all optional) methods:
 #
 #   mo_received(transceiver, pdu)
@@ -13,7 +15,7 @@
 
 class Smpp::Transceiver < Smpp::Base
 
-  # Send an MT SMS message. Delegate will receive message_accepted callback when SMSC 
+  # Send an MT SMS message. Delegate will receive message_accepted callback when SMSC
   # acknowledges, or the message_rejected callback upon error
   def send_mt(message_id, source_addr, destination_addr, short_message, options={})
     logger.debug "Sending MT: #{short_message}"
@@ -22,7 +24,7 @@ class Smpp::Transceiver < Smpp::Base
       write_pdu pdu
 
       # keep the message ID so we can associate the SMSC message ID with our message
-      # when the response arrives.      
+      # when the response arrives.
       @ack_ids[pdu.sequence_number] = message_id
     else
       raise InvalidStateException, "Transceiver is unbound. Cannot send MT messages."
@@ -38,23 +40,23 @@ class Smpp::Transceiver < Smpp::Base
       while message.size > 0 do
         parts << message.slice!(0..Smpp::Transceiver.get_message_part_size(options))
       end
-      
+
       0.upto(parts.size-1) do |i|
         udh = sprintf("%c", 5)            # UDH is 5 bytes.
-        udh << sprintf("%c%c", 0, 3)      # This is a concatenated message 
+        udh << sprintf("%c%c", 0, 3)      # This is a concatenated message
 
         #TODO Figure out why this needs to be an int here, it's a string elsewhere
         udh << sprintf("%c", message_id)  # The ID for the entire concatenated message
 
         udh << sprintf("%c", parts.size)  # How many parts this message consists of
         udh << sprintf("%c", i+1)         # This is part i+1
-        
+
         options[:esm_class] = 64 # This message contains a UDH header.
         options[:udh] = udh
 
         pdu = Pdu::SubmitSm.new(source_addr, destination_addr, parts[i], options)
         write_pdu pdu
-        
+
         # This is definately a bit hacky - multiple PDUs are being associated with a single
         # message_id.
         @ack_ids[pdu.sequence_number] = message_id
@@ -74,7 +76,7 @@ class Smpp::Transceiver < Smpp::Base
       write_pdu pdu
 
       # keep the message ID so we can associate the SMSC message ID with our message
-      # when the response arrives.      
+      # when the response arrives.
       @ack_ids[pdu.sequence_number] = message_id
     else
       raise InvalidStateException, "Transceiver is unbound. Cannot send MT messages."
@@ -85,11 +87,11 @@ class Smpp::Transceiver < Smpp::Base
   def send_bind
     raise IOError, 'Receiver already bound.' unless unbound?
     pdu = Pdu::BindTransceiver.new(
-        @config[:system_id], 
+        @config[:system_id],
         @config[:password],
-        @config[:system_type], 
-        @config[:source_ton], 
-        @config[:source_npi], 
+        @config[:system_type],
+        @config[:source_ton],
+        @config[:source_npi],
         @config[:source_address_range])
     write_pdu(pdu)
   end

@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require "rubygems"
 require "test/unit"
 require File.expand_path(File.dirname(__FILE__) + "../../lib/smpp")
@@ -28,7 +29,7 @@ class TransceiverTest < Test::Unit::TestCase
     assert_equal(134, Smpp::Transceiver.get_message_part_size(options))
   end
   def test_get_message_part_size_non_existant_data_coding
-    options = {:data_coding => 666} 
+    options = {:data_coding => 666}
     assert_equal(153, Smpp::Transceiver.get_message_part_size(options))
   end
 end

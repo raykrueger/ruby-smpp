@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 # signals invalid message header
 class Smpp::Pdu::GenericNack < Smpp::Pdu::Base
   handles_cmd GENERIC_NACK
@@ -15,6 +17,6 @@ class Smpp::Pdu::GenericNack < Smpp::Pdu::Base
   end
 
   def self.from_wire_data(seq, status, body)
-    new(seq,status,body) 
+    new(seq,status,body)
   end
-end        
+end

@@ -1,10 +1,11 @@
+# encoding: UTF-8
 # this class serves as the base for all the bind* commands.
-# since the command format remains the same for all bind commands, 
+# since the command format remains the same for all bind commands,
 # sub classes just change the @@command_id
 class Smpp::Pdu::BindBase < Smpp::Pdu::Base
   class << self; attr_accessor :command_id ; end
 
-  attr_reader :system_id, :password, :system_type, :addr_ton, :addr_npi, :address_range 
+  attr_reader :system_id, :password, :system_type, :addr_ton, :addr_npi, :address_range
 
   def initialize(system_id, password, system_type, addr_ton, addr_npi, address_range, seq = nil)
     @system_id, @password, @system_type, @addr_ton, @addr_npi, @address_range =

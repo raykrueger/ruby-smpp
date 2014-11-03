@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 class Smpp::Pdu::SubmitSmResponse < Smpp::Pdu::Base
   handles_cmd SUBMIT_SM_RESP
 
@@ -13,7 +15,7 @@ class Smpp::Pdu::SubmitSmResponse < Smpp::Pdu::Base
   end
 
   def optional_parameter(tag)
-    if optional_parameters 
+    if optional_parameters
       if param = optional_parameters[tag]
         param.value
       end

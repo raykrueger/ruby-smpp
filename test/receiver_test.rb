@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require 'rubygems'
 require 'test/unit'
 require 'smpp'
@@ -185,11 +186,11 @@ require 'server'
 require 'delegate'
 
 class SmppTest < Test::Unit::TestCase
-  
+
   def config
     Server::config
   end
-  
+
   def test_transceiver_should_bind_and_unbind_then_stop
     EventMachine.run {
       EventMachine.start_server "localhost", 9000, Server::Unbind

@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require 'rubygems'
 require 'test/unit'
 require File.expand_path(File.dirname(__FILE__) + "../../lib/smpp")
@@ -79,7 +80,7 @@ class PduParsingTest < Test::Unit::TestCase
     data = <<-EOF
     0000 0028 8000 0004 0000 0000 4da8 ebed
     3534 3131 342d 3034 3135 562d 3231 3230
-    452d 3039 4831 5100                    
+    452d 3039 4831 5100
     EOF
 
     pdu = create_pdu(data)

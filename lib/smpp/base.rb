@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 require 'timeout'
 require 'scanf'
 require 'monitor'
