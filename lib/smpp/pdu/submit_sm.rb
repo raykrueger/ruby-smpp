@@ -32,7 +32,7 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
     @data_coding             = options[:data_coding]?options[:data_coding]:3 # iso-8859-1
     @sm_default_msg_id       = options[:sm_default_msg_id]?options[:sm_default_msg_id]:0
     @short_message           = short_message
-    payload                  = @udh ? @udh + @short_message : @short_message
+    payload                  = @udh ? @udh + @short_message.force_encoding('UTF-8') : @short_message
     @sm_length               = payload.length
 
     @optional_parameters     = options[:optional_parameters]
@@ -55,7 +55,7 @@ class Smpp::Pdu::SubmitSm < Smpp::Pdu::Base
   def to_human
     # convert header (4 bytes) to array of 4-byte ints
     a = @data.to_s.unpack('N4')
-    sprintf("(%22s) len=%3d cmd=%8s status=%1d seq=%03d (%s)", self.class.to_s[11..-1], a[0], a[1].to_s(16), a[2], a[3], @msg_body[0..30])
+    sprintf("(%22s) len=%3d cmd=%8s status=%1d seq=%03d (%s)", self.class.to_s[11..-1], a[0], a[1].to_s(16), a[2], a[3], @msg_body[0..30].encode('UTF-8'))
   end
 
   def self.from_wire_data(seq, status, body)
