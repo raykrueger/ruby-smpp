@@ -76,6 +76,8 @@ module Smpp
           timer.cancel
           close_connection
         elsif unbound?
+          timer.cancel
+          close_connection
           logger.warn "Link is unbound, waiting until next #{delay_secs} interval before querying again"
         else
 
